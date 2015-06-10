@@ -9,5 +9,5 @@ public class Main_Panel extends JPanel {
 	public Main_Panel() {
 //Danting
 	}
-// Daniyar
+// Daniyar comment
 }

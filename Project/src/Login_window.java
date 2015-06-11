@@ -13,13 +13,19 @@ import javax.swing.JTextField;
 import javax.swing.JPasswordField;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 
 public class Login_window extends JFrame {
 
 	private JPanel contentPane;
 	private JTextField txtName;
-	private JPasswordField psfID;
+	
+	static Connection connection;
+	private JTextField psfID;
 
 	/**
 	 * Launch the application.
@@ -36,7 +42,7 @@ public class Login_window extends JFrame {
 				// connection to ORACLE
 				try {
 					DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
-					Connection connection = DriverManager.getConnection("jdbc:oracle:thin:@dbhost.ugrad.cs.ubc.ca:1522:ug", "ora_i6k8", "a21014121");
+					connection = DriverManager.getConnection("jdbc:oracle:thin:@dbhost.ugrad.cs.ubc.ca:1522:ug", "ora_i6k8", "a21014121");
 					Statement stmt = connection.createStatement();
 					ResultSet rs = stmt.executeQuery("SELECT table_name FROM user_tables");
 					String sResult = "";
@@ -44,7 +50,6 @@ public class Login_window extends JFrame {
 					{
 						sResult += "<br>" + rs.getString("table_name");
 					}
-					connection.close();
 					//txtName = new JTextField("");
 					//txtName.setText("Connected");
 				} catch (SQLException e1) {
@@ -60,6 +65,17 @@ public class Login_window extends JFrame {
 	 * Create the frame.
 	 */
 	public Login_window() {
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosed(WindowEvent e) {
+				try {
+					connection.close();
+				} catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		});
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
 		contentPane = new JPanel();
@@ -72,11 +88,29 @@ public class Login_window extends JFrame {
 		contentPane.add(txtName);
 		txtName.setColumns(10);
 		
-		psfID = new JPasswordField();
-		psfID.setBounds(144, 105, 182, 28);
-		contentPane.add(psfID);
+		final JLabel lblError = new JLabel("");
+		lblError.setBounds(74, 37, 285, 16);
+		contentPane.add(lblError);
 		
 		JButton btnNewPlayer = new JButton("Create an account");
+		btnNewPlayer.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if ((!txtName.getText().isEmpty()) || (!psfID.getText().isEmpty())){
+					try {
+						Statement stmt = connection.createStatement();
+						stmt.executeQuery("INSERT INTO Player1 VALUES ('" + txtName.getText() + "','" +psfID.getText() + "')");
+						lblError.setText("Success");
+					} catch (SQLException e1) {
+						// TODO Auto-generated catch block
+					}
+				}
+				else
+				{
+					lblError.setText("Enter Somethin");
+				}
+			}
+		});
 		btnNewPlayer.setBounds(144, 180, 182, 29);
 		contentPane.add(btnNewPlayer);
 		
@@ -91,5 +125,12 @@ public class Login_window extends JFrame {
 		JLabel lblPlayerId = new JLabel("Player ID :");
 		lblPlayerId.setBounds(52, 111, 94, 16);
 		contentPane.add(lblPlayerId);
+		
+		psfID = new JTextField();
+		psfID.setColumns(10);
+		psfID.setBounds(144, 105, 182, 28);
+		contentPane.add(psfID);
+		
+
 	}
 }

@@ -9,10 +9,14 @@ import java.sql.Statement;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.JPasswordField;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 
 public class Login_window extends JFrame {
@@ -20,6 +24,7 @@ public class Login_window extends JFrame {
 	private JPanel contentPane;
 	private JTextField txtName;
 	private JPasswordField psfID;
+	private static Statement stmt;
 
 	/**
 	 * Launch the application.
@@ -37,7 +42,7 @@ public class Login_window extends JFrame {
 				try {
 					DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
 					Connection connection = DriverManager.getConnection("jdbc:oracle:thin:@dbhost.ugrad.cs.ubc.ca:1522:ug", "ora_i6k8", "a21014121");
-					Statement stmt = connection.createStatement();
+					stmt = connection.createStatement();
 					ResultSet rs = stmt.executeQuery("SELECT table_name FROM user_tables");
 					String sResult = "";
 					while(rs.next())
@@ -81,6 +86,33 @@ public class Login_window extends JFrame {
 		contentPane.add(btnNewPlayer);
 		
 		JButton btnLoging = new JButton("Log In");
+		btnLoging.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				try {
+					String username = txtName.getText();
+					String password = String.valueOf(psfID.getPassword());
+					String sql = "select AccountName,AccountID from Player1 where AcocuntName='" + username + "' AND AccountID=" + password;
+					ResultSet rs = stmt.executeQuery(sql);
+					
+					int count = 0;
+					while(rs.next()) {
+						count += 1;
+					}
+					if (count ==1 ) {
+						JOptionPane.showMessageDialog(null, "Access Granted!");
+					}
+					else if (count > 1) {
+						JOptionPane.showMessageDialog(null, "Access Denied.");
+					}
+					else {
+						JOptionPane.showMessageDialog(null, "User not found.");
+					}
+				}
+				catch (Exception ex) {
+					
+				}
+			}
+		});
 		btnLoging.setBounds(144, 145, 182, 29);
 		contentPane.add(btnLoging);
 		

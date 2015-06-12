@@ -99,20 +99,36 @@ public class Login_window extends JFrame {
 		txtName.requestFocus();
 		
 		final JLabel lblError = new JLabel("");
-		lblError.setBounds(74, 37, 285, 16);
+		lblError.setBounds(20, 37, 404, 16);
 		contentPane.add(lblError);
 		
 		JButton btnNewPlayer = new JButton("Create an account");
 		btnNewPlayer.addMouseListener(new MouseAdapter() {
 			@Override
+			// when click on create new player button
 			public void mouseClicked(MouseEvent e) {
+				
+				//check if name and playerID fields are empty
 				if ((!txtName.getText().isEmpty()) || (!psfID.getText().isEmpty())){
 					try {
-						stmt.executeQuery("INSERT INTO Player1 VALUES ('" + txtName.getText() + "','" +psfID.getText() + "')");
-						lblError.setText("Success");
+						
+						// check if playerID is integer
+						int iID = 0;
+						try {
+							Integer.parseInt(psfID.getText());		
+							stmt.executeQuery("INSERT INTO Player1 VALUES ('" + txtName.getText() + "','" +psfID.getText() + "')");
+							lblError.setText("Success");
+						}
+						catch (NumberFormatException numError)
+						{
+							lblError.setText("Please Enter an integer value as PlayerID");
+						}
 					} catch (SQLException e1) {
 						// TODO Auto-generated catch block
-						lblError.setText(String.valueOf(e1.getErrorCode()));
+						if (e1.getErrorCode() == 1)
+							lblError.setText("The PlayerID is already taken please choose another.");
+						else
+							e1.printStackTrace();
 					}
 				}
 				else

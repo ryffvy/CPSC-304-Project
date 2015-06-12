@@ -55,10 +55,10 @@ public class Login_window extends JFrame {
 					stmt = connection.createStatement();
 					ResultSet rs = stmt.executeQuery("SELECT * FROM Player1");
 					String sResult = "";
-					while(rs.next())
-					{
-						sResult += "<br>" + rs.getString("table_name");
-					}
+					//while(rs.next())
+					//{
+					//	sResult += "<br>" + rs.getString("table_name");
+					///}
 					//txtName = new JTextField("");
 					//txtName.setText("Connected");
 				} catch (SQLException e1) {
@@ -131,7 +131,7 @@ public class Login_window extends JFrame {
 					String username = txtName.getText();
 					String password = psfID.getText();
 					//int password = Integer.parseInt(psfID.getText());
-					String sql = "SELECT AccountName,AccountID FROM Player1 WHERE AcocuntName='" + username + "' AND AccountID=" + password;                    
+					String sql = "SELECT AccountName,AccountID FROM Player1 WHERE AccountName='" + username + "' AND AccountID=" + password;                    
 					ResultSet rs = stmt.executeQuery(sql);
 					
 					int count = 0;
@@ -146,7 +146,7 @@ public class Login_window extends JFrame {
 					}
 				}
 				catch (SQLException e1) {
-					e1.printStackTrace();
+					JOptionPane.showMessageDialog(null, "Access Denied.");
 				}
 			}
 		});

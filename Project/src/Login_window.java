@@ -53,7 +53,7 @@ public class Login_window extends JFrame {
 					DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
 					connection = DriverManager.getConnection("jdbc:oracle:thin:@dbhost.ugrad.cs.ubc.ca:1522:ug", "ora_i6k8", "a21014121");
 					stmt = connection.createStatement();
-					ResultSet rs = stmt.executeQuery("SELECT table_name FROM user_tables");
+					ResultSet rs = stmt.executeQuery("SELECT * FROM Player1");
 					String sResult = "";
 					while(rs.next())
 					{
@@ -96,6 +96,7 @@ public class Login_window extends JFrame {
 		txtName.setBounds(144, 65, 182, 28);
 		contentPane.add(txtName);
 		txtName.setColumns(10);
+		txtName.requestFocus();
 		
 		final JLabel lblError = new JLabel("");
 		lblError.setBounds(74, 37, 285, 16);
@@ -124,18 +125,18 @@ public class Login_window extends JFrame {
 		contentPane.add(btnNewPlayer);
 		
 		JButton btnLoging = new JButton("Log In");
-		btnLoging.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
+		btnLoging.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
 				try {
 					String username = txtName.getText();
-					int password = Integer.parseInt(psfID.getText());
+					String password = psfID.getText();
+					//int password = Integer.parseInt(psfID.getText());
 					String sql = "SELECT AccountName,AccountID FROM Player1 WHERE AcocuntName='" + username + "' AND AccountID=" + password;                    
 					ResultSet rs = stmt.executeQuery(sql);
 					
 					int count = 0;
 					while(rs.next()) {
-						count += 1;
+						count = count + 1;
 					}
 					if (count == 1 ) {
 						JOptionPane.showMessageDialog(null, "Access Granted!");

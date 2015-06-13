@@ -23,11 +23,13 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import javax.swing.JList;
+import java.awt.Choice;
 
 
 
 public class Login_window extends JFrame {
-
+	private boolean bVisible = false;
 	private JPanel contentPane;
 	private JTextField txtName;
 	private static Statement stmt;
@@ -53,7 +55,6 @@ public class Login_window extends JFrame {
 					DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
 					connection = DriverManager.getConnection("jdbc:oracle:thin:@dbhost.ugrad.cs.ubc.ca:1522:ug", "ora_i6k8", "a21014121");
 					stmt = connection.createStatement();
-					ResultSet rs = stmt.executeQuery("SELECT * FROM Player1");
 					String sResult = "";
 					//while(rs.next())
 					//{
@@ -99,48 +100,70 @@ public class Login_window extends JFrame {
 		txtName.requestFocus();
 		
 		final JLabel lblError = new JLabel("");
+		final JButton btnLoging = new JButton("Log In");
+		
+		// Drop down menu
+		final Choice ddmServer = new Choice();
+		ddmServer.setVisible(false);
+		ddmServer.setEnabled(false);
+		ddmServer.setBounds(144, 217, 182, 26);
+		ddmServer.add("North America 1");
+		ddmServer.add("North America 2");
+		ddmServer.add("Asia");
+		ddmServer.add("Europe");
+		
 		lblError.setBounds(20, 37, 404, 16);
 		contentPane.add(lblError);
 		
-		JButton btnNewPlayer = new JButton("Create an account");
+		final JButton btnNewPlayer = new JButton("Create an account");
 		btnNewPlayer.addMouseListener(new MouseAdapter() {
 			@Override
-			// when click on create new player button
+			// when click on create new player button (CreateNewPlayer)
 			public void mouseClicked(MouseEvent e) {
-				
-				//check if name and playerID fields are empty
-				if ((!txtName.getText().isEmpty()) || (!psfID.getText().isEmpty())){
-					try {
-						
-						// check if playerID is integer
-						int iID = 0;
+				// check
+				if (bVisible)
+				{
+					//check if name and playerID fields are empty
+					if ((!txtName.getText().isEmpty()) || (!psfID.getText().isEmpty())){
 						try {
-							Integer.parseInt(psfID.getText());		
-							stmt.executeQuery("INSERT INTO Player1 VALUES ('" + txtName.getText() + "','" +psfID.getText() + "')");
-							lblError.setText("Success");
+							// check if playerID is integer
+							int iID = 0;
+							try {
+								Integer.parseInt(psfID.getText());	
+								stmt.executeQuery("INSERT INTO Player1 VALUES ('" + txtName.getText() + "','" +psfID.getText() + "')");
+								lblError.setText("Success");
+								}
+							catch (NumberFormatException numError)
+							{
+								lblError.setText("Please Enter an integer value as PlayerID");
+							}
+						} catch (SQLException e1) {
+							// TODO Auto-generated catch block
+							if (e1.getErrorCode() == 1)
+								lblError.setText("The PlayerID is already taken please choose another.");
+							else
+								e1.printStackTrace();
 						}
-						catch (NumberFormatException numError)
-						{
-							lblError.setText("Please Enter an integer value as PlayerID");
-						}
-					} catch (SQLException e1) {
-						// TODO Auto-generated catch block
-						if (e1.getErrorCode() == 1)
-							lblError.setText("The PlayerID is already taken please choose another.");
-						else
-							e1.printStackTrace();
+					}
+					else
+					{
+						lblError.setText("Enter Somethin");
 					}
 				}
 				else
 				{
-					lblError.setText("Enter Somethin");
+					ddmServer.setEnabled(true);
+					ddmServer.setVisible(true);
+					ddmServer.setBounds(btnLoging.getBounds().x, btnLoging.getBounds().y, btnLoging.getBounds().width, btnLoging.getBounds().height);
+					btnNewPlayer.setBounds(btnNewPlayer.getBounds().x, btnNewPlayer.getBounds().y+50, btnNewPlayer.getBounds().width, btnNewPlayer.getBounds().height);
+					btnLoging.setBounds(btnLoging.getBounds().x, btnLoging.getBounds().y+50, btnLoging.getBounds().width, btnLoging.getBounds().height);
+					bVisible = true;
 				}
 			}
 		});
 		btnNewPlayer.setBounds(144, 180, 182, 29);
 		contentPane.add(btnNewPlayer);
 		
-		JButton btnLoging = new JButton("Log In");
 		btnLoging.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				try {
@@ -184,6 +207,7 @@ public class Login_window extends JFrame {
 		psfID.setColumns(10);
 		psfID.setBounds(144, 105, 182, 28);
 		contentPane.add(psfID);
+		contentPane.add(ddmServer);
 		
 
 	}

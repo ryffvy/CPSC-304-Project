@@ -1,4 +1,5 @@
 import javax.swing.JFrame;
+
 import javax.swing.JScrollPane;
 
 import java.awt.BorderLayout;
@@ -9,13 +10,19 @@ import javax.swing.JTable;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+=======
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import java.awt.GridLayout;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.LayoutStyle.ComponentPlacement;
 
 
 public class Main_Window extends JFrame{
 	private JTable table;
 	
 	public Main_Window(){
-		setSize(500,500);
 		
 		JScrollPane scrollPane = new JScrollPane();
 		getContentPane().add(scrollPane, BorderLayout.CENTER);
@@ -63,6 +70,7 @@ public class Main_Window extends JFrame{
 		JLabel lblServer = new JLabel("Server:");
 		lblServer.setBounds(6, 90, 70, 20);
 		panel_1.add(lblServer);
+		
 		setSize(707,364);
 		getContentPane().setLayout(null);
 		
@@ -145,5 +153,10 @@ public class Main_Window extends JFrame{
 			e.printStackTrace();
 		}
 		return row;
+	}
+	private static class __Tmp {
+		private static void __tmp() {
+			  javax.swing.JPanel __wbp_panel = new javax.swing.JPanel();
+		}
 	}
 }

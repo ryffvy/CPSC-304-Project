@@ -133,8 +133,17 @@ public class Login_window extends JFrame {
 							try {
 								Integer.parseInt(psfID.getText());	
 								stmt.executeQuery("INSERT INTO Player1 VALUES ('" + txtName.getText() + "','" +psfID.getText() + "')");
-								lblError.setText("Success");
+								stmt.executeQuery("INSERT INTO Player2 VALUES ('" +psfID.getText() + "','" +ddmServer.getSelectedItem() + "')");
+								
+								// open the main window
+								try {
+										Main_Window frame = new Main_Window();
+										frame.setVisible(true);
+										dispose();
+									} catch (Exception e9) {
+										e9.printStackTrace();
 								}
+							}
 							catch (NumberFormatException numError)
 							{
 								lblError.setText("Please Enter an integer value as PlayerID");
@@ -142,14 +151,14 @@ public class Login_window extends JFrame {
 						} catch (SQLException e1) {
 							// TODO Auto-generated catch block
 							if (e1.getErrorCode() == 1)
-								lblError.setText("The PlayerID is already taken please choose another.");
+								lblError.setText("This PlayerID and Player Name is already taken. Please choose another.");
 							else
 								e1.printStackTrace();
 						}
 					}
 					else
 					{
-						lblError.setText("Enter Somethin");
+						lblError.setText("Enter Something");
 					}
 				}
 				else
@@ -180,9 +189,13 @@ public class Login_window extends JFrame {
 						count = count + 1;
 					}
 					if (count == 1 ) {
-						JOptionPane.showMessageDialog(null, "Access Granted!");
-						dispose();
-						new Main_Window();
+						try {
+							Main_Window frame = new Main_Window();
+							frame.setVisible(true);
+							dispose();
+						} catch (Exception e9) {
+							e9.printStackTrace();
+					}
 						
 					}
 					else {

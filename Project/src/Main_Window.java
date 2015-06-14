@@ -36,7 +36,7 @@ public class Main_Window extends JFrame{
 	private JTable table;
 //	private static Connection connection;
 	
-	public Main_Window(){
+	public Main_Window(String accountID){
 		
 //		connection = con;
 		
@@ -48,9 +48,20 @@ public class Main_Window extends JFrame{
 		setSize(707,364);
 		getContentPane().setLayout(null);
 		
+		setSize(707,364);
+		getContentPane().setLayout(null);
+		
+		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane.setBounds(6, 0, 697, 342);
+		getContentPane().add(tabbedPane);
+		
+		JPanel panPlayerInfo = new JPanel();
+		tabbedPane.addTab("Player Info", null, panPlayerInfo, null);
+		panPlayerInfo.setLayout(null);
+		
 		JPanel panel = new JPanel();
-		panel.setBounds(425, 23, 275, 208);
-		getContentPane().add(panel);
+		panel.setBounds(6, 6, 290, 161);
+		panPlayerInfo.add(panel);
 		panel.setLayout(null);
 		
 		JLabel lblInfo = new JLabel("Player Info:");
@@ -59,7 +70,7 @@ public class Main_Window extends JFrame{
 		
 		JPanel panel_1 = new JPanel();
 		panel_1.setBorder(null);
-		panel_1.setBounds(16, 37, 253, 144);
+		panel_1.setBounds(16, 37, 268, 118);
 		panel.add(panel_1);
 		
 		JLabel label = new JLabel("");
@@ -71,24 +82,82 @@ public class Main_Window extends JFrame{
 		panel_1.add(label);
 		panel_1.add(label_1);
 		
-		JLabel lblAccountId = new JLabel("Account ID:");
-		lblAccountId.setBounds(6, 0, 96, 20);
+		final JLabel lblAccountId = new JLabel("Account ID:");
+		lblAccountId.setBounds(6, 0, 256, 20);
 		panel_1.add(lblAccountId);
 		
 		JLabel lblGuild = new JLabel("Guild: ");
-		lblGuild.setBounds(6, 30, 41, 20);
+		lblGuild.setBounds(6, 30, 256, 20);
 		panel_1.add(lblGuild);
 		
 		JLabel lblAccountName = new JLabel("Account Name:");
-		lblAccountName.setBounds(6, 60, 119, 20);
+		lblAccountName.setBounds(6, 60, 256, 20);
 		panel_1.add(lblAccountName);
 		
 		JLabel lblServer = new JLabel("Server:");
-		lblServer.setBounds(6, 90, 70, 20);
+		lblServer.setBounds(6, 90, 256, 20);
 		panel_1.add(lblServer);
 		
-		setSize(707,364);
-		getContentPane().setLayout(null);
+		JPanel panel_5 = new JPanel();
+		panel_5.setBounds(6, 179, 260, 82);
+		panPlayerInfo.add(panel_5);
+		panel_5.setLayout(null);
+		
+		JLabel lblCharacter = new JLabel("Characters:");
+		lblCharacter.setBounds(6, 6, 128, 16);
+		panel_5.add(lblCharacter);
+		
+		JComboBox comboBox = new JComboBox();
+		comboBox.setBounds(16, 34, 200, 27);
+		panel_5.add(comboBox);
+		
+		JPanel panel_2 = new JPanel();
+		panel_2.setBounds(298, 6, 232, 284);
+		panPlayerInfo.add(panel_2);
+		panel_2.setLayout(null);
+		
+		JLabel lblCharacterInfo = new JLabel("Character Info:");
+		lblCharacterInfo.setBounds(6, 6, 94, 16);
+		panel_2.add(lblCharacterInfo);
+		
+		JPanel panel_3 = new JPanel();
+		panel_3.setBounds(6, 37, 220, 241);
+		panel_2.add(panel_3);
+		panel_3.setLayout(null);
+		
+		JLabel lblName = new JLabel("Name:");
+		lblName.setBounds(6, 10, 208, 16);
+		panel_3.add(lblName);
+		
+		JLabel lblClass = new JLabel("Class: ");
+		lblClass.setBounds(6, 40, 208, 16);
+		panel_3.add(lblClass);
+		
+		JLabel lblLevel = new JLabel("Label: ");
+		lblLevel.setBounds(6, 70, 208, 16);
+		panel_3.add(lblLevel);
+		
+		JLabel lblRace = new JLabel("Race:");
+		lblRace.setBounds(6, 100, 208, 16);
+		panel_3.add(lblRace);
+		
+		JLabel lblServer_1 = new JLabel("Server: ");
+		lblServer_1.setBounds(6, 130, 208, 16);
+		panel_3.add(lblServer_1);
+		
+		JLabel lblGold = new JLabel("Gold: ");
+		lblGold.setBounds(6, 160, 208, 16);
+		panel_3.add(lblGold);
+		
+		JButton btnViewInventory = new JButton("View Inventory");
+		btnViewInventory.setBounds(534, 105, 136, 50);
+		panPlayerInfo.add(btnViewInventory);
+		
+		JPanel tabGuild = new JPanel();
+		tabbedPane.addTab("Guild", null, tabGuild, null);
+		
+		JPanel tabAdmin = new JPanel();
+		tabbedPane.addTab("Admin", null, tabAdmin, null);
 		
 		//Fetch Data from the database
 //		try {
@@ -120,7 +189,23 @@ public class Main_Window extends JFrame{
 		getContentPane().add(btnGetTableplayer);
 		
 		
-		
+	    // display account info
+		try {
+			DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
+			Connection connection = DriverManager.getConnection("jdbc:oracle:thin:@dbhost.ugrad.cs.ubc.ca:1522:ug", "ora_i6k8", "a21014121");
+			Statement stmt = connection.createStatement();
+			ResultSet rs;
+			rs = stmt.executeQuery("select * from Player1 p1, player2 p2 where p1.accountid = p2.accountid and p1.accountID = " + accountID);
+		    table = new JTable(buildTableModel(rs));
+		    lblAccountId.setText(lblAccountId.getText());
+		    lblAccountName.setText(lblAccountName.getText() + " " + table.getModel().getValueAt(0, 0));
+		    lblServer.setText(lblAccountId.getText() + accountID);
+		    lblAccountId.setText(lblAccountId.getText() + accountID);
+			
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 	}
 	
 //	TO BE WORKED ON

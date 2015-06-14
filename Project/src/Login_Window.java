@@ -191,7 +191,7 @@ public class Login_Window extends JFrame {
 						rs.close();
 						stmt.close();
 						connection.close();
-						new Main_Window().setVisible(true);
+						new Main_Window(password).setVisible(true);
 						
 					}
 					else {

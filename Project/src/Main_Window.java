@@ -16,6 +16,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Vector;
 
+
+
+
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -86,35 +89,6 @@ public class Main_Window extends JFrame{
 		setSize(707,364);
 		getContentPane().setLayout(null);
 		
-		//Fetch Data from the database
-		try {
-			Statement stmt = connection.createStatement();
-			ResultSet rs = stmt.executeQuery("select * from Player1");
-			JTable table = new JTable(buildTableModel(rs));
-			JScrollPane scrollTable = new JScrollPane(table);
-			JFrame frame = new JFrame("Testing Table");
-			frame.getContentPane().add(scrollTable, BorderLayout.CENTER);
-		    frame.setSize(300, 150);
-		    frame.setVisible(true);
-//			JOptionPane.showMessageDialog(null, new JScrollPane(table));
-			
-		} catch (SQLException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		
-//		TO BE WORKED ON
-		//Button for showing table Player1
-//		JButton btnGetTableplayer = new JButton("Get Table \"Player1\"");
-//		btnGetTableplayer.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent arg0) {
-//				displayTable(connection);
-//			}
-//		});
-//		btnGetTableplayer.setBounds(39, 74, 200, 50);
-//		getContentPane().add(btnGetTableplayer);
-		
-		
 		
 	}
 	
@@ -168,4 +142,35 @@ public class Main_Window extends JFrame{
 			  javax.swing.JPanel __wbp_panel = new javax.swing.JPanel();
 		}
 	}
+	
+	//Fetch Data from the database
+//			try {
+//				Statement stmt = connection.createStatement();
+//				ResultSet rs = stmt.executeQuery("select * from Player1");
+//				JTable table = new JTable(buildTableModel(rs));
+//				JScrollPane scrollTable = new JScrollPane(table);
+//				JFrame frame = new JFrame("Testing Table");
+//				frame.getContentPane().add(scrollTable, BorderLayout.CENTER);
+//			    frame.setSize(300, 150);
+//			    frame.setVisible(true);
+////				JOptionPane.showMessageDialog(null, new JScrollPane(table));
+//				
+//			} catch (SQLException e1) {
+//				// TODO Auto-generated catch block
+//				e1.printStackTrace();
+//			}
+			
+//			TO BE WORKED ON
+			//Button for showing table Player1
+//			JButton btnGetTableplayer = new JButton("Get Table \"Player1\"");
+//			btnGetTableplayer.addActionListener(new ActionListener() {
+//				public void actionPerformed(ActionEvent arg0) {
+//					displayTable(connection);
+//				}
+//			});
+//			btnGetTableplayer.setBounds(39, 74, 200, 50);
+//			getContentPane().add(btnGetTableplayer);
+			
+			
+			
 }

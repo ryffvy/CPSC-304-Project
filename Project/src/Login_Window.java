@@ -117,13 +117,14 @@ public class Login_Window extends JFrame {
 				if (bVisible)
 				{
 					//check if name and playerID fields are empty
-					if ((!txtName.getText().isEmpty()) || (!(psfID.getPassword().length==0))){
+					if ((!txtName.getText().trim().isEmpty()) && (!(psfID.getPassword().length==0))){
 						try {
 							// check if playerID is integer
 							int iID = 0;
 							try {
 								int tempPass = Integer.parseInt(String.valueOf(psfID.getPassword()));	
-								stmt.executeQuery("INSERT INTO Player1 VALUES ('" + txtName.getText() + "','" + tempPass + "')");
+								stmt.executeQuery("INSERT INTO Player1 VALUES ('" + txtName.getText() + "','" +tempPass + "')");
+								stmt.executeQuery("INSERT INTO Player2 VALUES ('" +psfID.getText() + "','" +ddmServer.getSelectedItem() + "')");
 								lblError.setText("Success");
 								}
 							catch (NumberFormatException numError)
@@ -140,7 +141,7 @@ public class Login_Window extends JFrame {
 					}
 					else
 					{
-						lblError.setText("Enter Somethin");
+						lblError.setText("Enter Something.");
 					}
 				}
 				else
@@ -204,7 +205,7 @@ public class Login_Window extends JFrame {
 		lblPlayerId.setBounds(52, 111, 94, 16);
 		contentPane.add(lblPlayerId);
 		
-		psfID = new JPasswordField();
+		psfID = new JPasswordField(20);
 		psfID.setColumns(10);
 		psfID.setBounds(144, 105, 182, 28);
 		contentPane.add(psfID);

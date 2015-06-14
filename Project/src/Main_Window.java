@@ -39,11 +39,19 @@ import java.awt.event.ActionEvent;
 
 public class Main_Window extends JFrame{
 	private JTable table;
-//	private static Connection connection;
+	private static Connection connection;
+	private Statement stmt;
 	
 	public Main_Window(String accountID){
 		
-//		connection = con;
+		try {
+			DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
+			connection = DriverManager.getConnection("jdbc:oracle:thin:@dbhost.ugrad.cs.ubc.ca:1522:ug", "ora_i6k8", "a21014121");
+			stmt = connection.createStatement();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		JScrollPane scrollPane = new JScrollPane();
 		getContentPane().add(scrollPane, BorderLayout.CENTER);
@@ -195,31 +203,29 @@ public class Main_Window extends JFrame{
 		
 		
 	    // display account info
-		try {
-			DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
-			Connection connection = DriverManager.getConnection("jdbc:oracle:thin:@dbhost.ugrad.cs.ubc.ca:1522:ug", "ora_i6k8", "a21014121");
-			Statement stmt = connection.createStatement();
-			ResultSet rs;
-			rs = stmt.executeQuery("select * from Player1 p1, player2 p2 where p1.accountid = p2.accountid and p1.accountID = " + accountID);
-		    table = new JTable(buildTableModel(rs));
-		    lblAccountId.setText(lblAccountId.getText());
-		    lblAccountName.setText(lblAccountName.getText() + " " + table.getModel().getValueAt(0, 0));
-		    lblServer.setText(lblAccountId.getText() + accountID);
-		    lblAccountId.setText(lblAccountId.getText() + accountID);
-			
-		} catch (SQLException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+//		try {
+//			
+//			ResultSet rs;
+//			rs = stmt.executeQuery("select * from Player1 p1, player2 p2 where p1.accountid = p2.accountid and p1.accountID = " + accountID);
+//		    table = new JTable(buildTableModel(rs));
+//		    lblAccountId.setText(lblAccountId.getText());
+//		    lblAccountName.setText(lblAccountName.getText() + " " + table.getModel().getValueAt(0, 0));
+//		    lblServer.setText(lblAccountId.getText() + accountID);
+//		    lblAccountId.setText(lblAccountId.getText() + accountID);
+//			
+//		} catch (SQLException e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
+//		}
 	}
 	
 //	TO BE WORKED ON
 	public void displayTable() {
 				//Fetch Data from the database
 				try {
-					DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
-					Connection connection = DriverManager.getConnection("jdbc:oracle:thin:@dbhost.ugrad.cs.ubc.ca:1522:ug", "ora_i6k8", "a21014121");
-					Statement stmt = connection.createStatement();
+//					DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
+//					Connection connection = DriverManager.getConnection("jdbc:oracle:thin:@dbhost.ugrad.cs.ubc.ca:1522:ug", "ora_i6k8", "a21014121");
+//					Statement stmt = connection.createStatement();
 					ResultSet rs = stmt.executeQuery("select * from Player1");
 					JTable table = new JTable(buildTableModel(rs));
 					JScrollPane scrollTable = new JScrollPane(table);

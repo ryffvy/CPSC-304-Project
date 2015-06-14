@@ -2,6 +2,7 @@ package src;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
+import java.awt.KeyboardFocusManager;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -11,22 +12,31 @@ import java.sql.Statement;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.PlainDocument;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.JPasswordField;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 
-
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+
 import javax.swing.JList;
+
 import java.awt.Choice;
+
+import javax.swing.JTextArea;
+import javax.swing.UIManager;
+
+import java.awt.Font;
+import java.awt.Color;
 
 
 
@@ -80,20 +90,21 @@ public class Login_Window extends JFrame {
 			}
 		});
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 450, 300);
+		setBounds(425, 200, 500, 300);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
 		txtName = new JTextField();
+		txtName.setDocument(new JTextFieldLimit(20));
 		txtName.setBounds(144, 65, 182, 28);
 		contentPane.add(txtName);
 		txtName.setColumns(10);
 		txtName.requestFocus();
 		
-		final JLabel lblError = new JLabel("");
 		final JButton btnLoging = new JButton("Log In");
+		btnLoging.setFocusable(false);
 		
 		// Drop down menu
 		final Choice ddmServer = new Choice();
@@ -105,10 +116,9 @@ public class Login_Window extends JFrame {
 		ddmServer.add("Asia");
 		ddmServer.add("Europe");
 		
-		lblError.setBounds(20, 37, 404, 16);
-		contentPane.add(lblError);
 		
 		final JButton btnNewPlayer = new JButton("Create an account");
+		btnNewPlayer.setFocusable(false);
 		btnNewPlayer.addMouseListener(new MouseAdapter() {
 			@Override
 			// when click on create new player button (CreateNewPlayer)
@@ -125,23 +135,27 @@ public class Login_Window extends JFrame {
 								int tempPass = Integer.parseInt(String.valueOf(psfID.getPassword()));	
 								stmt.executeQuery("INSERT INTO Player1 VALUES ('" + txtName.getText() + "','" +tempPass + "')");
 								stmt.executeQuery("INSERT INTO Player2 VALUES ('" +psfID.getText() + "','" +ddmServer.getSelectedItem() + "')");
-								lblError.setText("Success");
+								JOptionPane.showMessageDialog(null, "Account Registered!");
+//								lblError.setText("Success");
 								}
 							catch (NumberFormatException numError)
 							{
-								lblError.setText("Please Enter an integer value as PlayerID");
+								JOptionPane.showMessageDialog(null, "PlayerID must be in numbers.");
+//								lblError.setText("Please Enter an integer value as PlayerID.");
 							}
 						} catch (SQLException e1) {
 							// TODO Auto-generated catch block
 							if (e1.getErrorCode() == 1)
-								lblError.setText("The PlayerID is already taken please choose another.");
+								JOptionPane.showMessageDialog(null, "The PlayerID or PlayerName you entered has been taken.");
+//								lblError.setText("The PlayerID is already taken please choose another.");
 							else
 								e1.printStackTrace();
 						}
 					}
 					else
 					{
-						lblError.setText("Enter Something.");
+						JOptionPane.showMessageDialog(null, "Player Name should contain some characters or numbers.");
+//						lblError.setText("Enter Something.");
 					}
 				}
 				else
@@ -174,9 +188,10 @@ public class Login_Window extends JFrame {
 					if (count == 1 ) {
 						JOptionPane.showMessageDialog(null, "Access Granted!");
 						dispose();
-						stmt.close();
 						rs.close();
-						new Main_Window(connection).setVisible(true);
+						stmt.close();
+						connection.close();
+						new Main_Window().setVisible(true);
 						
 					}
 					else {
@@ -205,12 +220,53 @@ public class Login_Window extends JFrame {
 		lblPlayerId.setBounds(52, 111, 94, 16);
 		contentPane.add(lblPlayerId);
 		
-		psfID = new JPasswordField(20);
+		psfID = new JPasswordField();
+		psfID.setDocument(new JTextFieldLimit(20));
 		psfID.setColumns(10);
 		psfID.setBounds(144, 105, 182, 28);
 		contentPane.add(psfID);
 		contentPane.add(ddmServer);
 		
+		JTextArea txtPlayerNameMax = new JTextArea();
+		txtPlayerNameMax.setFocusable(false);
+		txtPlayerNameMax.setEditable(false);
+		txtPlayerNameMax.setFont(new Font("Monospaced", Font.PLAIN, 10));
+		txtPlayerNameMax.setBackground(UIManager.getColor("Button.disabledForeground"));
+		txtPlayerNameMax.setText("(20 words max)");
+		txtPlayerNameMax.setBounds(336, 71, 88, 20);
+		contentPane.add(txtPlayerNameMax);
+		
+		JTextArea textPlayerIDMax = new JTextArea();
+		textPlayerIDMax.setFocusable(false);
+		textPlayerIDMax.setEditable(false);
+		textPlayerIDMax.setText("(20 numbers max)");
+		textPlayerIDMax.setFont(new Font("Monospaced", Font.PLAIN, 10));
+		textPlayerIDMax.setBackground(UIManager.getColor("Button.disabledForeground"));
+		textPlayerIDMax.setBounds(336, 111, 100, 20);
+		contentPane.add(textPlayerIDMax);
+		
 
+	}
+	
+	public class JTextFieldLimit extends PlainDocument {
+		  private int limit;
+		  JTextFieldLimit(int limit) {
+		    super();
+		    this.limit = limit;
+		  }
+
+		  JTextFieldLimit(int limit, boolean upper) {
+		    super();
+		    this.limit = limit;
+		  }
+
+		  public void insertString(int offset, String str, AttributeSet attr) throws BadLocationException {
+		    if (str == null)
+		      return;
+
+		    if ((getLength() + str.length()) <= limit) {
+		      super.insertString(offset, str, attr);
+		    }
+		  }
 	}
 }

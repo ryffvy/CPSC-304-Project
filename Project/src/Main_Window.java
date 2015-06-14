@@ -34,8 +34,11 @@ import java.awt.event.ActionEvent;
 
 public class Main_Window extends JFrame{
 	private JTable table;
+//	private static Connection connection;
 	
-	public Main_Window(final Connection connection){
+	public Main_Window(){
+		
+//		connection = con;
 		
 		JScrollPane scrollPane = new JScrollPane();
 		getContentPane().add(scrollPane, BorderLayout.CENTER);
@@ -46,7 +49,7 @@ public class Main_Window extends JFrame{
 		getContentPane().setLayout(null);
 		
 		JPanel panel = new JPanel();
-		panel.setBounds(426, 27, 275, 208);
+		panel.setBounds(425, 23, 275, 208);
 		getContentPane().add(panel);
 		panel.setLayout(null);
 		
@@ -88,56 +91,59 @@ public class Main_Window extends JFrame{
 		getContentPane().setLayout(null);
 		
 		//Fetch Data from the database
-		try {
-			Statement stmt = connection.createStatement();
-			ResultSet rs = stmt.executeQuery("select * from Player1");
-			JTable table = new JTable(buildTableModel(rs));
-			JScrollPane scrollTable = new JScrollPane(table);
-			JFrame frame = new JFrame("Testing Table");
-			frame.getContentPane().add(scrollTable, BorderLayout.CENTER);
-		    frame.setSize(300, 150);
-		    frame.setVisible(true);
-//			JOptionPane.showMessageDialog(null, new JScrollPane(table));
-			
-		} catch (SQLException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+//		try {
+//			Statement stmt = connection.createStatement();
+//			ResultSet rs = stmt.executeQuery("select * from Player1");
+//			JTable table = new JTable(buildTableModel(rs));
+//			JScrollPane scrollTable = new JScrollPane(table);
+//			JFrame frame = new JFrame("Testing Table");
+//			frame.getContentPane().add(scrollTable, BorderLayout.CENTER);
+//		    frame.setSize(300, 150);
+//		    frame.setVisible(true);
+////			JOptionPane.showMessageDialog(null, new JScrollPane(table));
+//			
+//		} catch (SQLException e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
+//		}
 		
 //		TO BE WORKED ON
 		//Button for showing table Player1
-//		JButton btnGetTableplayer = new JButton("Get Table \"Player1\"");
-//		btnGetTableplayer.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent arg0) {
-//				displayTable(connection);
-//			}
-//		});
-//		btnGetTableplayer.setBounds(39, 74, 200, 50);
-//		getContentPane().add(btnGetTableplayer);
+		JButton btnGetTableplayer = new JButton("Get Table \"Player1\"");
+		btnGetTableplayer.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				displayTable();
+				
+			}
+		});
+		btnGetTableplayer.setBounds(39, 74, 200, 50);
+		getContentPane().add(btnGetTableplayer);
 		
 		
 		
 	}
 	
 //	TO BE WORKED ON
-//	public void displayTable(Connection connection) {
-//				//Fetch Data from the database
-//				try {
-//					Statement stmt = connection.createStatement();
-//					ResultSet rs = stmt.executeQuery("select * from Player1");
-//					JTable table = new JTable(buildTableModel(rs));
-//					JScrollPane scrollTable = new JScrollPane(table);
-//					JFrame frame = new JFrame("Testing Table");
-//					frame.getContentPane().add(scrollTable, BorderLayout.CENTER);
-//				    frame.setSize(300, 150);
-//				    frame.setVisible(true);
+	public void displayTable() {
+				//Fetch Data from the database
+				try {
+					DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
+					Connection connection = DriverManager.getConnection("jdbc:oracle:thin:@dbhost.ugrad.cs.ubc.ca:1522:ug", "ora_i6k8", "a21014121");
+					Statement stmt = connection.createStatement();
+					ResultSet rs = stmt.executeQuery("select * from Player1");
+					JTable table = new JTable(buildTableModel(rs));
+					JScrollPane scrollTable = new JScrollPane(table);
+					JFrame frame = new JFrame("Testing Table");
+					frame.getContentPane().add(scrollTable, BorderLayout.CENTER);
+				    frame.setSize(300, 150);
+				    frame.setVisible(true);
 //					JOptionPane.showMessageDialog(null, new JScrollPane(table));
-//					
-//				} catch (SQLException e1) {
-//					// TODO Auto-generated catch block
-//					e1.printStackTrace();
-//				}
-//	}
+					
+				} catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+	}
 	
 	public static DefaultTableModel buildTableModel(ResultSet rs) throws SQLException {
 

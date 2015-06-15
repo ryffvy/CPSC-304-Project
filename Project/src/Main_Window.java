@@ -202,15 +202,15 @@ public class Main_Window extends JFrame{
 		
 //		TO BE WORKED ON
 		//Button for showing table Player1
-		JButton btnGetTableplayer = new JButton("Get Table \"Player1\"");
-		btnGetTableplayer.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				displayTable();
-				
-			}
-		});
-		btnGetTableplayer.setBounds(39, 74, 200, 50);
-		getContentPane().add(btnGetTableplayer);
+//		JButton btnGetTableplayer = new JButton("Get Table \"Player1\"");
+//		btnGetTableplayer.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent arg0) {
+//				displayTable();
+//				
+//			}
+//		});
+//		btnGetTableplayer.setBounds(39, 74, 200, 50);
+//		getContentPane().add(btnGetTableplayer);
 		
 		
 	    // display account info

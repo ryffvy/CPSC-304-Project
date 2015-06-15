@@ -192,7 +192,6 @@ public class Login_Window extends JFrame {
 						stmt.close();
 						connection.close();
 						new Main_Window(password).setVisible(true);
-						
 					}
 					else {
 						JOptionPane.showMessageDialog(null, "Access Denied.");

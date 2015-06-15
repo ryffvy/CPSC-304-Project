@@ -345,7 +345,6 @@ public class Main_Window extends JFrame{
 				lblServer.setText(lblServer.getText() + rs.getString("Server"));
 			}		
 		} catch (SQLException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 	}
@@ -365,17 +364,19 @@ public class Main_Window extends JFrame{
 		}
 	}
 	
+	
+	//Save values from database into object
 	public static DefaultTableModel buildTableModel(ResultSet rs) throws SQLException {
-
 	    ResultSetMetaData metaData = rs.getMetaData();
-
+	    
 	    // names of columns
 	    Vector<String> columnNames = new Vector<String>();
 	    int columnCount = metaData.getColumnCount();
+	    
 	    for (int column = 1; column <= columnCount; column++) {
 	        columnNames.add(metaData.getColumnName(column));
 	    }
-
+	    
 	    // data of the table
 	    Vector<Vector<Object>> data = new Vector<Vector<Object>>();
 	    while (rs.next()) {
@@ -385,14 +386,5 @@ public class Main_Window extends JFrame{
 	        }
 	        data.add(vector);
 	    }
-
 	    return new DefaultTableModel(data, columnNames);
-
-	}
-	
-	private static class __Tmp {
-		private static void __tmp() {
-			  javax.swing.JPanel __wbp_panel = new javax.swing.JPanel();
-		}
-	}
-}
+	}}

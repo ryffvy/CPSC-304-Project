@@ -203,20 +203,20 @@ public class Main_Window extends JFrame{
 		
 		
 	    // display account info
-//		try {
-//			
-//			ResultSet rs;
-//			rs = stmt.executeQuery("select * from Player1 p1, player2 p2 where p1.accountid = p2.accountid and p1.accountID = " + accountID);
-//		    table = new JTable(buildTableModel(rs));
-//		    lblAccountId.setText(lblAccountId.getText());
-//		    lblAccountName.setText(lblAccountName.getText() + " " + table.getModel().getValueAt(0, 0));
-//		    lblServer.setText(lblAccountId.getText() + accountID);
-//		    lblAccountId.setText(lblAccountId.getText() + accountID);
-//			
-//		} catch (SQLException e1) {
-//			// TODO Auto-generated catch block
-//			e1.printStackTrace();
-//		}
+		try {			
+			ResultSet rs;
+			rs = stmt.executeQuery("select * from Player1 p1, player2 p2 where p1.accountID = p2.account and p1.accountID = " + accountID);
+		    table = new JTable(buildTableModel(rs));
+		    lblAccountId.setText(lblAccountId.getText());
+		    lblAccountName.setText(lblAccountName.getText() + " " + table.getModel().getValueAt(0, 0));
+   		    lblGuild.setText(lblGuild.getText() + accountID);
+   		    lblServer.setText(lblServer.getText() + accountID);
+
+			
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 	}
 	
 //	TO BE WORKED ON

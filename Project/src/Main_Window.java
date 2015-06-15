@@ -196,7 +196,7 @@ public class Main_Window extends JFrame{
 		tabGuild.setLayout(null);
 		
 		JPanel panel_7 = new JPanel();
-		panel_7.setBounds(29, 41, 242, 121);
+		panel_7.setBounds(29, 41, 242, 114);
 		tabGuild.add(panel_7);
 		panel_7.setLayout(null);
 		
@@ -220,16 +220,18 @@ public class Main_Window extends JFrame{
 		lblGuild_1.setBounds(17, 6, 41, 23);
 		tabGuild.add(lblGuild_1);
 		
-		JComboBox comboBox_3 = new JComboBox();
-		comboBox_3.setBounds(57, 0, 200, 37);
-		tabGuild.add(comboBox_3);
+		JComboBox cmbGuild = new JComboBox();
+		cmbGuild.setBounds(57, 0, 200, 37);
+		tabGuild.add(cmbGuild);
 		
 		JButton btnJoin = new JButton("Join Guild");
-		btnJoin.setBounds(29, 167, 123, 23);
+		btnJoin.setEnabled(false);
+		btnJoin.setBounds(29, 161, 123, 29);
 		tabGuild.add(btnJoin);
 		
 		JButton btnLeave = new JButton("Leave Guild");
-		btnLeave.setBounds(148, 167, 123, 23);
+		btnLeave.setEnabled(false);
+		btnLeave.setBounds(148, 161, 123, 29);
 		tabGuild.add(btnLeave);
 		
 		JLabel lblGuildMembers = new JLabel("Guild Members:");
@@ -240,32 +242,34 @@ public class Main_Window extends JFrame{
 		scrollPane_2.setBounds(277, 41, 393, 148);
 		tabGuild.add(scrollPane_2);
 		
-		JPanel panel_8 = new JPanel();
-		panel_8.setBounds(29, 196, 641, 104);
-		tabGuild.add(panel_8);
-		panel_8.setLayout(null);
+		JPanel panAdminGuild = new JPanel();
+		panAdminGuild.setBounds(29, 196, 641, 104);
+		panAdminGuild.setVisible(false);
+		tabGuild.add(panAdminGuild);
+		panAdminGuild.setLayout(null);
 		
 		JButton btnAddPlayer = new JButton("Add Chosen Player");
 		btnAddPlayer.setBounds(0, 6, 172, 29);
-		panel_8.add(btnAddPlayer);
+		panAdminGuild.add(btnAddPlayer);
 		
 		JLabel lblToGuild = new JLabel("to Guild: ");
 		lblToGuild.setBounds(10, 47, 65, 16);
-		panel_8.add(lblToGuild);
+		panAdminGuild.add(lblToGuild);
 		
 		JComboBox comboBox_4 = new JComboBox();
 		comboBox_4.setBounds(66, 42, 177, 29);
-		panel_8.add(comboBox_4);
+		panAdminGuild.add(comboBox_4);
 		
 		JScrollPane scrollPane_3 = new JScrollPane();
 		scrollPane_3.setBounds(247, 22, 388, 76);
-		panel_8.add(scrollPane_3);
+		panAdminGuild.add(scrollPane_3);
 		
 		JLabel lblP = new JLabel("Players in All Guilds:");
 		lblP.setBounds(247, 6, 200, 16);
-		panel_8.add(lblP);
+		panAdminGuild.add(lblP);
 		
 		JPanel tabAdmin = new JPanel();
+		tabAdmin.setVisible(false);
 		tabbedPane.addTab("Admin", null, tabAdmin, null);
 		tabAdmin.setLayout(null);
 		

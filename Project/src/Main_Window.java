@@ -163,6 +163,17 @@ public class Main_Window extends JFrame{
 		panel_3.add(lblGold);
 		
 		JButton btnViewInventory = new JButton("View Inventory");
+		btnViewInventory.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				try {
+					ResultSet rs = stmt.executeQuery("select * from Player1");
+					displayTable(rs, "Inventory");
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		});
 		btnViewInventory.setBounds(534, 105, 136, 50);
 		panPlayerInfo.add(btnViewInventory);
 		
@@ -191,15 +202,15 @@ public class Main_Window extends JFrame{
 		
 //		TO BE WORKED ON
 		//Button for showing table Player1
-		JButton btnGetTableplayer = new JButton("Get Table \"Player1\"");
-		btnGetTableplayer.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				displayTable();
-				
-			}
-		});
-		btnGetTableplayer.setBounds(39, 74, 200, 50);
-		getContentPane().add(btnGetTableplayer);
+//		JButton btnGetTableplayer = new JButton("Get Table \"Player1\"");
+//		btnGetTableplayer.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent arg0) {
+//				displayTable();
+//				
+//			}
+//		});
+//		btnGetTableplayer.setBounds(39, 74, 200, 50);
+//		getContentPane().add(btnGetTableplayer);
 		
 		
 	    // display account info
@@ -220,16 +231,15 @@ public class Main_Window extends JFrame{
 	}
 	
 //	TO BE WORKED ON
-	public void displayTable() {
+	public void displayTable(ResultSet rs, String name) {
 				//Fetch Data from the database
 				try {
 //					DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
 //					Connection connection = DriverManager.getConnection("jdbc:oracle:thin:@dbhost.ugrad.cs.ubc.ca:1522:ug", "ora_i6k8", "a21014121");
 //					Statement stmt = connection.createStatement();
-					ResultSet rs = stmt.executeQuery("select * from Player1");
 					JTable table = new JTable(buildTableModel(rs));
 					JScrollPane scrollTable = new JScrollPane(table);
-					JFrame frame = new JFrame("Testing Table");
+					JFrame frame = new JFrame(name);
 					frame.getContentPane().add(scrollTable, BorderLayout.CENTER);
 				    frame.setSize(300, 150);
 				    frame.setVisible(true);

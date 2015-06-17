@@ -15,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Enumeration;
 import java.util.Vector;
 
 import javax.swing.JLabel;
@@ -22,6 +23,7 @@ import javax.swing.JPanel;
 
 import java.awt.GridLayout;
 
+import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -39,8 +41,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import javax.swing.JTextField;
+
 import javax.swing.JList;
 
+import javax.swing.JList;
 
 public class Main_Window extends JFrame{
 	private static Connection connection;
@@ -239,6 +246,71 @@ public class Main_Window extends JFrame{
 		});
 		btnViewInventory.setBounds(534, 105, 136, 50);
 		panPlayerInfo.add(btnViewInventory);
+		
+		JPanel panMarket = new JPanel();
+		tabbedPane.addTab("Market", null, panMarket, null);
+		panMarket.setLayout(null);
+		
+		JScrollPane s = new JScrollPane();
+		s.setBounds(23, 32, 214, 111);
+		panMarket.add(s);
+		
+		JLabel lblYourSellOrders = new JLabel("Your Sell Orders:");
+		lblYourSellOrders.setBounds(23, 10, 105, 16);
+		panMarket.add(lblYourSellOrders);
+		
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setBounds(249, 32, 214, 111);
+		panMarket.add(scrollPane);
+		
+		JLabel lblBuyOrders = new JLabel("Your Buy Orders:");
+		lblBuyOrders.setBounds(249, 10, 105, 16);
+		panMarket.add(lblBuyOrders);
+		
+		JButton button = new JButton("View Inventory");
+		button.setBounds(503, 93, 136, 50);
+		panMarket.add(button);
+		
+		JPanel panBuySell = new JPanel();
+		panBuySell.setBounds(23, 155, 136, 119);
+		panMarket.add(panBuySell);
+		panBuySell.setLayout(null);
+		
+		JButton btnBuy = new JButton("Buy Order");
+		btnBuy.setBounds(0, 22, 132, 29);
+		panBuySell.add(btnBuy);
+		
+		JButton btnSell = new JButton("Sell Order");
+		btnSell.setBounds(0, 52, 132, 29);
+		panBuySell.add(btnSell);
+		
+		JLabel lblPlaceOrder = new JLabel("Place Order:");
+		lblPlaceOrder.setBounds(0, 0, 127, 16);
+		panBuySell.add(lblPlaceOrder);
+		
+		JButton btnBuyService = new JButton("Buy Service");
+		btnBuyService.setBounds(0, 82, 132, 29);
+		panBuySell.add(btnBuyService);
+		
+		JLabel lblCharMarket = new JLabel("Character: ");
+		lblCharMarket.setBounds(475, 32, 164, 16);
+		panMarket.add(lblCharMarket);
+		
+		JLabel lblGoldMarket = new JLabel("Gold:");
+		lblGoldMarket.setBounds(475, 52, 61, 16);
+		panMarket.add(lblGoldMarket);
+		
+		JScrollPane scrollPane_1 = new JScrollPane();
+		scrollPane_1.setBounds(171, 182, 292, 92);
+		panMarket.add(scrollPane_1);
+		
+		JLabel lblTransactions = new JLabel("Transactions: ");
+		lblTransactions.setBounds(171, 165, 214, 16);
+		panMarket.add(lblTransactions);
+		
+		JButton btnUpdateMarket = new JButton("Update");
+		btnUpdateMarket.setBounds(511, 245, 117, 29);
+		panMarket.add(btnUpdateMarket);
 		
 		
 		//Create a Guild tab
@@ -577,7 +649,7 @@ public class Main_Window extends JFrame{
 		tabAdmin.setLayout(null);
 		
 		JPanel panel_4 = new JPanel();
-		panel_4.setBounds(6, 6, 197, 250);
+		panel_4.setBounds(6, 6, 208, 250);
 		tabAdmin.add(panel_4);
 		panel_4.setLayout(null);
 		
@@ -586,62 +658,291 @@ public class Main_Window extends JFrame{
 		panel_4.add(lblDisplayOptions);
 		
 		JPanel panel_6 = new JPanel();
-		panel_6.setBounds(16, 17, 175, 214);
+		panel_6.setBounds(6, 17, 202, 227);
 		panel_4.add(panel_6);
 		panel_6.setLayout(null);
 		
-		ButtonGroup bg = new ButtonGroup();
+		final ButtonGroup bg = new ButtonGroup();
 		
 		JRadioButton rdbtnCharacters = new JRadioButton("# of Characters");
+		rdbtnCharacters.setName("CH");
 		rdbtnCharacters.setSelected(true);
 		rdbtnCharacters.setFont(new Font("Lucida Grande", Font.PLAIN, 11));
 		rdbtnCharacters.setBounds(0, 0, 150, 30);
 		panel_6.add(rdbtnCharacters);
 		bg.add(rdbtnCharacters);
 		
-		JRadioButton rdbtnByServer = new JRadioButton("By server: ");
+
+		final JRadioButton rdbtnByServer = new JRadioButton("By server: ");
+		rdbtnByServer.setName("SV");
 		rdbtnByServer.setFont(new Font("Lucida Grande", Font.PLAIN, 11));
 		rdbtnByServer.setBounds(0, 22, 150, 30);
 		panel_6.add(rdbtnByServer);
 		bg.add(rdbtnByServer);
 		
-		JComboBox byServerBox = new JComboBox();
-		byServerBox.setBounds(29, 52, 140, 22);
-		panel_6.add(byServerBox);
+		// server combo box
+		final JComboBox cmbServer = new JComboBox();
+		cmbServer.setEnabled(false);
+		cmbServer.setBounds(29, 52, 140, 22);
+		cmbServer.addItem("North America 1");
+		cmbServer.addItem("North America 2");
+		cmbServer.addItem("Asia");
+		cmbServer.addItem("Europe");
+		panel_6.add(cmbServer);
 		
-		JRadioButton rdbtnPlayersWith = new JRadioButton("<html>Players with > 2 characters and Level greater than: </html>");
+		final JRadioButton rdbtnPlayersWith = new JRadioButton("<html>Players with > 2 characters and Level greater than: </html>");
+		rdbtnPlayersWith.setName("PW");
 		rdbtnPlayersWith.setFont(new Font("Lucida Grande", Font.PLAIN, 11));
 		rdbtnPlayersWith.setBounds(0, 78, 175, 37);
 		panel_6.add(rdbtnPlayersWith);
 		bg.add(rdbtnPlayersWith);
 		
-		JComboBox levelBox = new JComboBox();
-		levelBox.setBounds(29, 120, 75, 22);
-		panel_6.add(levelBox);
+		// level combo box
+		final JComboBox cmbLevel = new JComboBox();
+		cmbLevel.setEnabled(false);
+		cmbLevel.setBounds(29, 120, 75, 22);
+		cmbLevel.addItem("5");
+		cmbLevel.addItem("10");
+		cmbLevel.addItem("15");
+		cmbLevel.addItem("20");
+		cmbLevel.addItem("25");
+		cmbLevel.addItem("30");
+		cmbLevel.addItem("35");
+		cmbLevel.addItem("40");
+		cmbLevel.addItem("45");
+		cmbLevel.addItem("50");
+		cmbLevel.addItem("55");
+		cmbLevel.addItem("60");
+		cmbLevel.addItem("65");
+		cmbLevel.addItem("70");
+		cmbLevel.addItem("75");
+		cmbLevel.addItem("80");
+		panel_6.add(cmbLevel);
 		
-		JRadioButton rdbtnBestPurchaser = new JRadioButton("Best Purchaser");
-		rdbtnBestPurchaser.setFont(new Font("Lucida Grande", Font.PLAIN, 11));
-		rdbtnBestPurchaser.setBounds(0, 146, 150, 30);
-		panel_6.add(rdbtnBestPurchaser);
-		bg.add(rdbtnBestPurchaser);
+		final JRadioButton rdbtnServicePurchaser = new JRadioButton("Service Purchaser");
+		rdbtnServicePurchaser.setName("BP");
+		rdbtnServicePurchaser.setFont(new Font("Lucida Grande", Font.PLAIN, 11));
+		rdbtnServicePurchaser.setBounds(0, 146, 127, 30);
+		panel_6.add(rdbtnServicePurchaser);
+		bg.add(rdbtnServicePurchaser);
 		
-		JRadioButton rdbtnPlayerWithMost = new JRadioButton("Player With Most Gold");
+		final JRadioButton rdbtnPlayerWithMost = new JRadioButton("Player With Most Gold");
+		rdbtnPlayerWithMost.setName("PM");
 		rdbtnPlayerWithMost.setFont(new Font("Lucida Grande", Font.PLAIN, 11));
 		rdbtnPlayerWithMost.setBounds(0, 174, 150, 30);
 		panel_6.add(rdbtnPlayerWithMost);
 		bg.add(rdbtnPlayerWithMost);
 
-		JScrollPane scrollPane_1 = new JScrollPane();
-		scrollPane_1.setBounds(215, 6, 445, 250);
-		tabAdmin.add(scrollPane_1);
+		// admin tab table
+		final JTable tblAdmin = new JTable();
+		JScrollPane srpAdmin = new JScrollPane(tblAdmin);
+		srpAdmin.setBounds(226, 6, 434, 250);
+		tabAdmin.add(srpAdmin);
 		
+		// show players button
 		JButton btnShowPlayers = new JButton("Show Players");
 		btnShowPlayers.setBounds(6, 262, 200, 28);
 		tabAdmin.add(btnShowPlayers);
 		
-		JButton btnNewButton = new JButton("Delete Player");
-		btnNewButton.setBounds(506, 262, 154, 28);
-		tabAdmin.add(btnNewButton);
+		final JButton btnDeletePlayer = new JButton("Delete Player");
+		btnDeletePlayer.setEnabled(false);
+		btnDeletePlayer.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				int iRowSelected = tblAdmin.getSelectedRow();
+				if (iRowSelected != -1)
+				{
+					ResultSet rs = null;
+					try {
+					rs = executeQuery("delete from Player1 where AccountID = " + tblAdmin.getModel().getValueAt(iRowSelected, 0));
+					rs = executeQuery("select P1.AccountID, p1.AccountName, p2.server from Player1 P1, Player2 P2 where P1.AccountID=P2.AccountID");
+						tblAdmin.setModel(buildTableModel(rs));
+					} catch (SQLException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
+			}
+		});
+		btnDeletePlayer.setBounds(506, 262, 154, 28);
+		tabAdmin.add(btnDeletePlayer);
+		rdbtnServicePurchaser.setName("Success");
+		
+		JRadioButton rdbtAllPlayer = new JRadioButton("All Players");
+		rdbtAllPlayer.setName("AP");
+		rdbtAllPlayer.setFont(new Font("Lucida Grande", Font.PLAIN, 11));
+		rdbtAllPlayer.setBounds(0, 204, 150, 30);
+		bg.add(rdbtAllPlayer);
+		panel_6.add(rdbtAllPlayer);
+		
+		final JComboBox cmbPurchaser = new JComboBox();
+		cmbPurchaser.setEnabled(false);
+		cmbPurchaser.setBounds(123, 148, 79, 27);
+		cmbPurchaser.addItem("Best");
+		cmbPurchaser.addItem("Worst");
+		panel_6.add(cmbPurchaser);
+		
+		// when place buy order button is pressed mb1
+		btnBuy.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				new BuySell_Window("Buy", "", Integer.parseInt(accountID)).setVisible(true);
+			}
+		});
+		
+		// when place sell order button is pressed mb2
+		btnSell.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				new BuySell_Window("Sell", "", Integer.parseInt(accountID)).setVisible(true);
+			}
+		});
+		
+		// when buy service button is pressed mb3
+		btnBuyService.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				new BuySell_Window("Service", "", Integer.parseInt(accountID)).setVisible(true);
+			}
+		});
+		
+		// when rdbtnByServer radio button is selected/deselected
+		rdbtnByServer.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				if (rdbtnByServer.isSelected())
+					cmbServer.setEnabled(true);
+				else
+					cmbServer.setEnabled(false);
+			}
+		});
+		
+		// when rdbtnPlayersWith radio button is selected/deselected
+		rdbtnPlayersWith.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				if (rdbtnPlayersWith.isSelected())
+					cmbLevel.setEnabled(true);
+				else
+					cmbLevel.setEnabled(false);
+			}
+		});
+		
+		// when rdbtnServicePurchaser radio button is selected/deselected
+		rdbtnServicePurchaser.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				if (rdbtnServicePurchaser.isSelected())
+					cmbPurchaser.setEnabled(true);
+				else
+					cmbPurchaser.setEnabled(false);
+			}
+		});
+		
+		// when rdbtAllPlayer radio button is selected/deselected
+		rdbtAllPlayer.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				if (!rdbtnPlayersWith.isSelected())
+					btnDeletePlayer.setEnabled(false);
+			}
+		});
+		
+		// show players button event handler
+		btnShowPlayers.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				String sName = getSelectedButtonLabel(bg);
+				ResultSet rs = null;
+				
+				if (sName == "CH")
+				{
+					try {
+					rs = executeQuery("select AccountID, COUNT(*) as \"Number of Characters\" from CharacterOwned Group By AccountID");
+						tblAdmin.setModel(buildTableModel(rs));
+					} catch (SQLException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
+				else
+				{
+					if (sName == "SV")
+					{
+						try {
+						rs = executeQuery("select P1.AccountName as \"Player Name\", P2.Server from Player1 P1, Player2 P2 where P1.AccountID=P2.AccountID and P2.server='" + cmbServer.getSelectedItem().toString() + "'");
+
+							tblAdmin.setModel(buildTableModel(rs));
+						} catch (SQLException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					}
+					else
+					{
+						if (sName == "PW")
+						{
+							try {
+							rs = executeQuery("select c.AccountID from CharacterOwned c where c.Levels>" +  Integer.parseInt(cmbLevel.getSelectedItem().toString()) + "group by c.AccountID having COUNT(*)>1");
+								tblAdmin.setModel(buildTableModel(rs));
+							} catch (SQLException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+						}
+						else
+						{
+							if (sName == "BP")
+							{
+								try {
+									String sAggregation = "";
+									
+									if (cmbPurchaser.getSelectedIndex() == 0)
+										sAggregation = "MAX";
+									else
+										sAggregation = "MIN";
+									
+									rs = executeQuery("drop view Servicemoney; create view Servicemoney(AccountID, SumPrice) as select AccountID, AccountName as \"Player Name\", sum(s.Price) from Purchases p, Service s where p.ServiceID=s.ServiceID group by p.AccountID; select p.AccountName from Player1 p, Servicemoney s where p.AccountID = S. AccountID and s.SumPrice in (select " + sAggregation + "(SumPrice) from Servicemoney)");
+									tblAdmin.setModel(buildTableModel(rs));
+								} catch (SQLException e1) {
+									// TODO Auto-generated catch block
+									e1.printStackTrace();
+								}
+							}
+							else
+							{
+								if (sName == "PM")
+								{
+									try {
+									rs = executeQuery("drop view SumCharMoney; create view SumCharMoney(AccountID, SumMoney) as select c.AccountID,sum(i.Gold) from  CharacterOwned c, InventoryHad i where c.CharName=i.CharName group by c.AccountID; select p.AccountName from Player1 p, SumCharMoney s where p.AccountID = S. AccountID and s.SumMoney in (select MAX(SumMoney) from SumCharMoney)");
+
+										tblAdmin.setModel(buildTableModel(rs));
+									} catch (SQLException e1) {
+										// TODO Auto-generated catch block
+										e1.printStackTrace();
+									}
+								}
+								else
+								{
+									if (sName == "AP")
+									{
+										try {
+											rs = executeQuery("select P1.AccountID, p1.AccountName, p2.server from Player1 P1, Player2 P2 where P1.AccountID=P2.AccountID");
+											tblAdmin.setModel(buildTableModel(rs));
+											btnDeletePlayer.setEnabled(true);
+										} catch (SQLException e1) {
+											// TODO Auto-generated catch block
+											e1.printStackTrace();
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+				/*switch(getSelectedButtonLabel(bg)) {
+				case "qw" : 
+					break;
+				}*/
+
+			}
+		});
 		
 	    //Display Player Info
 		try {
@@ -660,6 +961,17 @@ public class Main_Window extends JFrame{
 		} catch (SQLException e1) {
 			e1.printStackTrace();
 		}
+	}
+	
+	public ResultSet executeQuery(String sQuery){
+		ResultSet rs = null;
+		try {			
+			rs = stmt.executeQuery(sQuery);	
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		}
+		
+		return rs;
 	}
 	
 	
@@ -700,5 +1012,30 @@ public class Main_Window extends JFrame{
 	        data.add(vector);
 	    }
 	    return new DefaultTableModel(data, columnNames);
+	}
+	
+	// retrieve label of selected radio button
+	public String getSelectedButtonLabel(ButtonGroup buttonGroup) {
+        for (Enumeration<AbstractButton> buttons = buttonGroup.getElements(); buttons.hasMoreElements();) {
+            AbstractButton button = buttons.nextElement();
+
+            if (button.isSelected()) {
+                return button.getName();
+                
+            }
+        }
+
+        return null;
+    }
+	
+	public void RefreshMarket(JTable jSell, JTable jBuy, JLabel lblGold, JTable jTrans )
+	{
+		ResultSet rs = null;
+		try {			
+			rs = stmt.executeQuery("select * from player1");
+			
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		}
 	}
 }

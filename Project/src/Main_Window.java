@@ -43,7 +43,6 @@ import javax.swing.JList;
 
 
 public class Main_Window extends JFrame{
-	private JTable table;
 	private static Connection connection;
 	private Statement stmt;
 	
@@ -53,8 +52,7 @@ public class Main_Window extends JFrame{
 		try {
 			DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
 			connection = DriverManager.getConnection("jdbc:oracle:thin:@dbhost.ugrad.cs.ubc.ca:1522:ug", "ora_h3w8", "a56415136");
-			stmt = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE,
-			         ResultSet.HOLD_CURSORS_OVER_COMMIT);
+			stmt = connection.createStatement();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -194,13 +192,14 @@ public class Main_Window extends JFrame{
 				String selectedChar = (String) comboBox.getSelectedItem();
 				if(!(selectedChar.equals("(No character selected)"))) {
 					try {
-						ResultSet rs = stmt.executeQuery("Select * from CharacterOwned CO where CharName='"+ selectedChar + "'");
+						ResultSet rs = stmt.executeQuery("Select * from CharacterOwned CO, InventoryHad IH "
+								+ "						  where CO.CharName='"+ selectedChar + "' and CO.CharName=IH.CharName");
 						while(rs.next()) {
 							lblNameFill.setText(selectedChar);
 							lblClassFill.setText(rs.getString("Class"));
 							lblLevelFill.setText(rs.getString("Levels"));
 							lblRaceFill.setText(rs.getString("Race"));
-//							lblGoldFill.setText(rs.getString("Gold"));
+							lblGoldFill.setText(rs.getString("Gold"));
 						}
 					} catch (SQLException e1) {
 						e1.printStackTrace();
@@ -225,13 +224,16 @@ public class Main_Window extends JFrame{
 				String selectedChar = (String) comboBox.getSelectedItem();
 				if (!(selectedChar.equals("(No character selected)"))) {
 					try {
-						ResultSet rs = stmt.executeQuery("select ItemName, Quantity "
-								+ "						  from Contain c, Item i"
-								+ "						  where c.ItemID=i.ItemID and c.CharName='" + selectedChar + "'"); 
+						ResultSet rs = stmt.executeQuery("select I.ItemName, IIN.Quantity "
+								+ "						  from Item I, InInventory IIN"
+								+ "						  where IIN.CharName='" + selectedChar + "' and IIN.ItemID=I.ItemID"); 
 						displayTable(rs, selectedChar + "'s Inventory");
 					} catch (SQLException e) {
 						e.printStackTrace();
 					}
+				}
+				else {
+					JOptionPane.showMessageDialog(null, "No character is selected.");
 				}
 			}
 		});
@@ -275,6 +277,30 @@ public class Main_Window extends JFrame{
 		JLabel lblGuild_1 = new JLabel("Guild: ");
 		lblGuild_1.setBounds(17, 6, 41, 23);
 		tabGuild1.add(lblGuild_1);
+		
+		JPanel panel_8 = new JPanel();
+		panel_8.setBounds(17, 196, 653, 104);
+		tabGuild1.add(panel_8);
+		panel_8.setLayout(null);
+		
+		JLabel lblP = new JLabel("Players in All Guilds:");
+		lblP.setBounds(260, 6, 200, 16);
+		panel_8.add(lblP);
+		
+		//Display a fixed table of Players in all Guilds
+		final JTable table3 = new JTable();
+		JScrollPane scrollPane_3 = new JScrollPane(table3);
+		scrollPane_3.setBounds(260, 33, 393, 65);
+		panel_8.add(scrollPane_3);
+		try{ 
+			ResultSet rs = stmt.executeQuery("select p.AccountName,p.AccountID from Player1 p "
+					+ "where NOT EXISTS ((select g.GuildName from Guild_Owns g) "
+					+ "					  minus "
+					+ "					 (select b.GuildName from BelongsTo b where b.AccountID=p.AccountID))");
+			table3.setModel(buildTableModel(rs));
+		} catch(SQLException e) {
+			e.printStackTrace();
+		}
 		
 		JLabel lblGuildMembers = new JLabel("Guild Members:");
 		lblGuildMembers.setBounds(277, 6, 200, 23);
@@ -366,13 +392,22 @@ public class Main_Window extends JFrame{
 								while(rs.next()) {
 									lblMembersFill.setText(rs.getString("Members"));
 								}
+								//Update the list all members in guild table
+								rs = stmt.executeQuery("select P1.AccountName from Player1 P1, BelongsTo BT where BT.GuildName='" +selectedGuild+ "' and BT.AccountID=P1.AccountID");
+								table.setModel(buildTableModel(rs));
+								//Update the players in all guilds table
+								rs = stmt.executeQuery("select p.AccountName,p.AccountID from Player1 p "
+										+ "where NOT EXISTS ((select g.GuildName from Guild_Owns g) "
+										+ "					  minus "
+										+ "					 (select b.GuildName from BelongsTo b where b.AccountID=p.AccountID))");
+								table3.setModel(buildTableModel(rs));
+								//Update list of guilds the player is in
 								guildBox.removeAllItems();
 								rs = stmt.executeQuery("select distinct * from BelongsTo where AccountID=" +accountID);
 								while(rs.next()) {
 									guildBox.addItem(rs.getString("GuildName"));
 								}
 								JOptionPane.showMessageDialog(null, "Join Guild Successful!");
-								
 							} catch (SQLException e) {
 								e.printStackTrace();
 							}
@@ -405,7 +440,7 @@ public class Main_Window extends JFrame{
 								rs = stmt.executeQuery("delete from BelongsTo where accountid=" + accountID + "and GuildName='" + selectedGuild + "'");
 								rs = stmt.executeQuery("delete from GuildLeader where accountid=" + accountID);
 								//Update the label information
-								rs = stmt.executeQuery("select GL.AccountID from GuildLeader GL, Guild_Owns GO where GO.GuildName='" +selectedGuild+ "'");
+								rs = stmt.executeQuery("select GL.AccountID from GuildLeader GL, Guild_Owns GO where GL.AccountID=GO.AccountID and GO.GuildName='" +selectedGuild+ "'");
 								if(!rs.next()) lblGuildLeaderFill.setText("(no guild leader)");
 								rs = stmt.executeQuery("select count(AccountID) as Members"
 										+ "				from BelongsTo"
@@ -413,6 +448,16 @@ public class Main_Window extends JFrame{
 								while(rs.next()) {
 									lblMembersFill.setText(rs.getString("Members"));
 								}
+								//Update list all players in a guild table
+								rs = stmt.executeQuery("select P1.AccountName from Player1 P1, BelongsTo BT where BT.GuildName='" +selectedGuild+ "' and BT.AccountID=P1.AccountID");
+								table.setModel(buildTableModel(rs));
+								//Update the players in all guilds table
+								rs = stmt.executeQuery("select p.AccountName,p.AccountID from Player1 p "
+										+ "where NOT EXISTS ((select g.GuildName from Guild_Owns g) "
+										+ "					  minus "
+										+ "					 (select b.GuildName from BelongsTo b where b.AccountID=p.AccountID))");
+								table3.setModel(buildTableModel(rs));
+								//Update list of guilds the player is in
 								guildBox.removeAllItems();
 								rs = stmt.executeQuery("select distinct * from BelongsTo where AccountID=" +accountID);
 								while(rs.next()) {
@@ -435,30 +480,94 @@ public class Main_Window extends JFrame{
 		btnLeave.setBounds(140, 167, 115, 23);
 		tabGuild1.add(btnLeave);
 		
-		JPanel panel_8 = new JPanel();
-		panel_8.setBounds(29, 196, 641, 104);
-		tabGuild1.add(panel_8);
-		panel_8.setLayout(null);
+		//Admin putting a player into a guild
+		JLabel label_2 = new JLabel("Add Player:");
+		label_2.setBounds(0, 20, 65, 16);
+		panel_8.add(label_2);
 		
-		JButton btnAddPlayer = new JButton("Add Chosen Player");
-		btnAddPlayer.setBounds(0, 6, 172, 29);
-		panel_8.add(btnAddPlayer);
+		final JComboBox addPlayerBox = new JComboBox();
+		addPlayerBox.insertItemAt("(no player selected)", 0);
+		addPlayerBox.setSelectedIndex(0);
+		addPlayerBox.setMaximumRowCount(10);
+		addPlayerBox.setBounds(72, 11, 165, 25);
+		panel_8.add(addPlayerBox);
+		try {
+			ResultSet rs = stmt.executeQuery("select AccountName from Player1");
+			while (rs.next()) {
+				addPlayerBox.addItem(rs.getString("AccountName"));
+			}
+		} catch(SQLException e) {
+			e.printStackTrace();
+		}
 		
-		JLabel lblToGuild = new JLabel("to Guild: ");
-		lblToGuild.setBounds(10, 47, 65, 16);
+		JLabel lblToGuild = new JLabel("To Guild: ");
+		lblToGuild.setBounds(0, 49, 65, 16);
 		panel_8.add(lblToGuild);
 		
-		JComboBox toGuildBox = new JComboBox();
-		toGuildBox.setBounds(62, 45, 177, 25);
+		final JComboBox toGuildBox = new JComboBox();
+		toGuildBox.insertItemAt("(no guild selected)", 0);
+		toGuildBox.setSelectedIndex(0);
+		toGuildBox.setMaximumRowCount(5);
+		toGuildBox.setBounds(72, 45, 165, 25);
 		panel_8.add(toGuildBox);
+		try {
+			ResultSet rs = stmt.executeQuery("select distinct GuildName from BelongsTo");
+			while (rs.next()) {
+				toGuildBox.addItem(rs.getString("GuildName"));
+			}
+		} catch(SQLException e) {
+			e.printStackTrace();
+		}
 		
-		JScrollPane scrollPane_3 = new JScrollPane();
-		scrollPane_3.setBounds(247, 22, 388, 76);
-		panel_8.add(scrollPane_3);
-		
-		JLabel lblP = new JLabel("Players in All Guilds:");
-		lblP.setBounds(247, 6, 200, 16);
-		panel_8.add(lblP);
+		JButton btnAdd = new JButton("Add");
+		btnAdd.setBounds(72, 75, 165, 23);
+		panel_8.add(btnAdd);
+		btnAdd.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				String selectedPlayer = (String) addPlayerBox.getSelectedItem();
+				String selectedGuild = (String) toGuildBox.getSelectedItem();
+				if (selectedPlayer.equals("(no player selected)")) JOptionPane.showMessageDialog(null, "No player is selected.");
+				if (selectedGuild.equals("(no guild selected)")) JOptionPane.showMessageDialog(null, "No guild is selected.");
+				int selectedPlayerID = 0;
+				try {
+					//Check if already in the guild
+					ResultSet rs = stmt.executeQuery("select AccountID from BelongsTo where Guildname='" + selectedGuild + "' and AccountID="+accountID);
+					if (rs.next()) {
+						JOptionPane.showMessageDialog(null, "You are already a member of the guild: " + selectedGuild);
+					}
+					else {
+						rs = stmt.executeQuery("select * from Player1 where AccountName='" +selectedPlayer+ "'");
+						if(rs.next()) selectedPlayerID = rs.getInt("AccountID");
+						rs = stmt.executeQuery("insert into BelongsTo values ('" +selectedGuild+ "',"+selectedPlayerID+ ")");
+						//Update the label information
+						rs = stmt.executeQuery("select count(AccountID) as Members"
+								+ "				from BelongsTo"
+								+ "				where GuildName='" + selectedGuild + "'");
+						while(rs.next()) {
+							lblMembersFill.setText(rs.getString("Members"));
+						}
+						//Update the list all members in guild table
+						rs = stmt.executeQuery("select P1.AccountName from Player1 P1, BelongsTo BT where BT.GuildName='" +selectedGuild+ "' and BT.AccountID=P1.AccountID");
+						table.setModel(buildTableModel(rs));
+						//Update the players in all guilds table
+						rs = stmt.executeQuery("select p.AccountName,p.AccountID from Player1 p "
+								+ "where NOT EXISTS ((select g.GuildName from Guild_Owns g) "
+								+ "					  minus "
+								+ "					 (select b.GuildName from BelongsTo b where b.AccountID=p.AccountID))");
+						table3.setModel(buildTableModel(rs));
+						//Update list of guilds the player is in
+						guildBox.removeAllItems();
+						rs = stmt.executeQuery("select distinct * from BelongsTo where AccountID=" +accountID);
+						while(rs.next()) {
+							guildBox.addItem(rs.getString("GuildName"));
+						}
+						JOptionPane.showMessageDialog(null, "Successfully added!");
+					}
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		});
 		
 		
 		//Create an Admin tab
@@ -543,6 +652,7 @@ public class Main_Window extends JFrame{
 				lblAccountName.setText(lblAccountName.getText() + rs.getString("AccountName"));
 				lblServer.setText(lblServer.getText() + rs.getString("Server"));
 			}
+			//List of guilds the player is in
 			rs = stmt.executeQuery("select distinct * from BelongsTo where AccountID=" +accountID);
 			while(rs.next()) {
 				guildBox.addItem(rs.getString("GuildName"));

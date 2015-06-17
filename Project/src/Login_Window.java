@@ -63,7 +63,8 @@ public class Login_Window extends JFrame {
 				// connection to ORACLE
 				try {
 					DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
-					connection = DriverManager.getConnection("jdbc:oracle:thin:@dbhost.ugrad.cs.ubc.ca:1522:ug", "ora_i6k8", "a21014121");
+																												//ora_i6k8    a21014121
+					connection = DriverManager.getConnection("jdbc:oracle:thin:@dbhost.ugrad.cs.ubc.ca:1522:ug", "ora_h3w8", "a56415136");
 					stmt = connection.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.HOLD_CURSORS_OVER_COMMIT);
 				} catch (SQLException e1) {
 					// TODO Auto-generated catch block
@@ -171,7 +172,7 @@ public class Login_Window extends JFrame {
 		});
 		btnNewPlayer.setBounds(144, 180, 182, 29);
 		contentPane.add(btnNewPlayer);
-		
+		contentPane.getRootPane().setDefaultButton(btnLoging);
 		btnLoging.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				try {

@@ -31,12 +31,15 @@ import javax.swing.JRadioButton;
 import javax.swing.JTabbedPane;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 import javax.swing.JButton;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+
+import javax.swing.JList;
 
 
 public class Main_Window extends JFrame{
@@ -49,8 +52,9 @@ public class Main_Window extends JFrame{
 		//Connect to the database
 		try {
 			DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
-			connection = DriverManager.getConnection("jdbc:oracle:thin:@dbhost.ugrad.cs.ubc.ca:1522:ug", "ora_i6k8", "a21014121");
-			stmt = connection.createStatement();
+			connection = DriverManager.getConnection("jdbc:oracle:thin:@dbhost.ugrad.cs.ubc.ca:1522:ug", "ora_h3w8", "a56415136");
+			stmt = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE,
+			         ResultSet.HOLD_CURSORS_OVER_COMMIT);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -94,7 +98,7 @@ public class Main_Window extends JFrame{
 		panel_1.add(lblAccountId);
 		
 		JLabel lblGuild = new JLabel("Guild: ");
-		lblGuild.setBounds(6, 30, 256, 20);
+		lblGuild.setBounds(6, 30, 84, 20);
 		panel_1.add(lblGuild);
 		
 		JLabel lblAccountName = new JLabel("Account Name: ");
@@ -104,6 +108,11 @@ public class Main_Window extends JFrame{
 		JLabel lblServer = new JLabel("Server: ");
 		lblServer.setBounds(6, 90, 256, 20);
 		panel_1.add(lblServer);
+		
+		final JComboBox guildBox = new JComboBox();
+		guildBox.setMaximumRowCount(5);
+		guildBox.setBounds(42, 31, 180, 22);
+		panel_1.add(guildBox);
 		
 		JPanel panel_5 = new JPanel();
 		panel_5.setBounds(6, 179, 260, 82);
@@ -160,25 +169,26 @@ public class Main_Window extends JFrame{
 		lblGoldFill.setBounds(48, 120, 150, 16);
 		panel_3.add(lblGoldFill);
 		
+		
 		//Create and add the list of Characters the Player owns into the combo box
+		final JComboBox comboBox = new JComboBox();
+		comboBox.insertItemAt("(No character selected)", 0);
+		comboBox.setSelectedIndex(0);
+		comboBox.setMaximumRowCount(3);
 		JLabel lblCharacter = new JLabel("Characters: ");
 		lblCharacter.setBounds(6, 6, 128, 16);
 		panel_5.add(lblCharacter);
-		String[] playerCharList = {"(No character selected)","","","","",""};		//A player can only have up to 5 characters.
-															//+1 space to show an empty space when the application is first opened
 		try {
 			ResultSet rs = stmt.executeQuery("Select * from CharacterOwned where AccountID = " + accountID);
-			int count = 1;
 			while(rs.next()){
-				playerCharList[count] = rs.getString("CharName");
-				count++;
+				comboBox.addItem(rs.getString("CharName"));
 			}
 		}
 		catch (SQLException e1) {
 			e1.printStackTrace();
 		}
+		
 		//Fill in the information of the selected Character
-		final JComboBox comboBox = new JComboBox(playerCharList);
 		comboBox.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
 				String selectedChar = (String) comboBox.getSelectedItem();
@@ -212,11 +222,16 @@ public class Main_Window extends JFrame{
 		JButton btnViewInventory = new JButton("View Inventory");
 		btnViewInventory.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				try {
-					ResultSet rs = stmt.executeQuery("select * from CharacterOwned"); 
-					displayTable(rs, "Inventory");
-				} catch (SQLException e) {
-					e.printStackTrace();
+				String selectedChar = (String) comboBox.getSelectedItem();
+				if (!(selectedChar.equals("(No character selected)"))) {
+					try {
+						ResultSet rs = stmt.executeQuery("select ItemName, Quantity "
+								+ "						  from Contain c, Item i"
+								+ "						  where c.ItemID=i.ItemID and c.CharName='" + selectedChar + "'"); 
+						displayTable(rs, selectedChar + "'s Inventory");
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
 				}
 			}
 		});
@@ -229,59 +244,196 @@ public class Main_Window extends JFrame{
 		tabbedPane.addTab("Guild", null, tabGuild1, null);
 		tabGuild1.setLayout(null);
 		
+		JLabel lblGuildLeader = new JLabel("GuildLeader:");
+		lblGuildLeader.setBounds(17, 40, 90, 22);
+		tabGuild1.add(lblGuildLeader);
+		final JLabel lblGuildLeaderFill = new JLabel();
+		lblGuildLeaderFill.setBounds(105, 40, 162, 22);
+		tabGuild1.add(lblGuildLeaderFill);
+		
+		JLabel lblMembers = new JLabel("# of Members:");
+		lblMembers.setBounds(17, 70, 90, 22);
+		tabGuild1.add(lblMembers);
+		final JLabel lblMembersFill = new JLabel();
+		lblMembersFill.setBounds(105, 70, 162, 22);
+		tabGuild1.add(lblMembersFill);
+		
+		JLabel lblGuildServer = new JLabel("Server:");
+		lblGuildServer.setBounds(17, 100, 90, 22);
+		tabGuild1.add(lblGuildServer);
+		final JLabel lblGuildServerFill = new JLabel();
+		lblGuildServerFill.setBounds(105, 100, 162, 22);
+		tabGuild1.add(lblGuildServerFill);
+		
+		JLabel lblRosterSize = new JLabel("Roster Size:");
+		lblRosterSize.setBounds(17, 130, 90, 22);
+		tabGuild1.add(lblRosterSize);
+		final JLabel lblRosterSizeFill = new JLabel();
+		lblRosterSizeFill.setBounds(105, 130, 162, 22);
+		tabGuild1.add(lblRosterSizeFill);
+		
 		JLabel lblGuild_1 = new JLabel("Guild: ");
 		lblGuild_1.setBounds(17, 6, 41, 23);
 		tabGuild1.add(lblGuild_1);
-		
-		JComboBox listGuildBox = new JComboBox();
-		listGuildBox.setBounds(57, 5, 200, 25);
-		tabGuild1.add(listGuildBox);
-		
-//		JPanel panel_7 = new JPanel();
-//		panel_7.setBounds(17, 41, 242, 121);
-//		tabGuild1.add(panel_7);
-//		panel_7.setLayout(null);
-		
-		JLabel lblGuildLeader = new JLabel("GuildLeader:");
-		lblGuildLeader.setBounds(17, 40, 200, 22);
-		tabGuild1.add(lblGuildLeader);
-//		lblGuildLeader.setBounds(0, 0, 200, 22);
-//		panel_7.add(lblGuildLeader);
-		
-		JLabel lblMembers = new JLabel("# Members:");
-//		lblMembers.setBounds(0, 30, 200, 22);
-		lblMembers.setBounds(17, 70, 200, 22);
-		tabGuild1.add(lblMembers);
-//		panel_7.add(lblMembers);
-		
-		JLabel lblGuildServer = new JLabel("Server:");
-//		lblGuildServer.setBounds(0, 60, 200, 22);
-		lblGuildServer.setBounds(17, 100, 200, 22);
-		tabGuild1.add(lblGuildServer);
-//		panel_7.add(lblGuildServer);
-		
-		JLabel lblRosterSize = new JLabel("Roster Size:");
-//		lblRosterSize.setBounds(0, 90, 200, 22);
-		lblRosterSize.setBounds(17, 130, 200, 22);
-		tabGuild1.add(lblRosterSize);
-//		panel_7.add(lblRosterSize);
-
-		
-		JButton btnJoin = new JButton("Join Guild");
-		btnJoin.setBounds(17, 167, 115, 23);
-		tabGuild1.add(btnJoin);
-		
-		JButton btnLeave = new JButton("Leave Guild");
-		btnLeave.setBounds(140, 167, 115, 23);
-		tabGuild1.add(btnLeave);
 		
 		JLabel lblGuildMembers = new JLabel("Guild Members:");
 		lblGuildMembers.setBounds(277, 6, 200, 23);
 		tabGuild1.add(lblGuildMembers);
 		
-		JScrollPane scrollPane_2 = new JScrollPane();
+		final JTable table = new JTable();
+		JScrollPane scrollPane_2 = new JScrollPane(table);
 		scrollPane_2.setBounds(277, 41, 393, 148);
 		tabGuild1.add(scrollPane_2);
+		
+		//Display all the Guilds in the database from comboBox listGuildBox
+		final JComboBox listGuildBox = new JComboBox();
+		listGuildBox.insertItemAt("(no guild selected)", 0);
+		listGuildBox.setSelectedIndex(0);
+		listGuildBox.setMaximumRowCount(5);
+		try {
+			ResultSet rs = stmt.executeQuery("select GuildName from Guild_Owns");
+			while(rs.next()) {
+				listGuildBox.addItem(rs.getString("GuildName"));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		//Fill in all information when a guild is selected from listGuildBox
+		listGuildBox.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				String selectedGuild = (String) listGuildBox.getSelectedItem();
+				if(!(selectedGuild.equals("(no guild selected)"))) {
+					try {
+						//Check if there's no guild leader
+						ResultSet rs = stmt.executeQuery("select distinct AccountName "
+								+ "						  from Player1 P1,GuildLeader GL,Guild_Owns GO "
+								+ "						  where P1.AccountID=GL.AccountID and GO.AccountID=GL.AccountID and GO.GuildName='" +selectedGuild+ "'");
+						if(!rs.next()) lblGuildLeaderFill.setText("(no guild leader)");
+						else lblGuildLeaderFill.setText(rs.getString("AccountName"));
+						
+						rs = stmt.executeQuery("select RosterSize,Server"
+								+ "						  from Guild_Owns"
+								+ "						  where GuildName='" + selectedGuild + "'");
+						if(rs.next()) {
+							lblGuildServerFill.setText(rs.getString("Server"));
+							lblRosterSizeFill.setText(rs.getString("RosterSize"));
+						}
+						rs = stmt.executeQuery("select count(AccountID) as Members"
+								+ "				from BelongsTo"
+								+ "				where GuildName='" + selectedGuild + "'");
+						while(rs.next()) {
+							lblMembersFill.setText(rs.getString("Members"));
+						}
+						//Display a table of all members in the selected guild
+						rs = stmt.executeQuery("select P1.AccountName from Player1 P1, BelongsTo BT where BT.GuildName='" +selectedGuild+ "' and BT.AccountID=P1.AccountID");
+						table.setModel(buildTableModel(rs));
+					} catch (SQLException e1) {
+						e1.printStackTrace();
+					}
+				}
+				else {
+					lblGuildLeaderFill.setText("");
+					lblMembersFill.setText("");
+					lblGuildServerFill.setText("");
+					lblRosterSizeFill.setText("");
+					DefaultTableModel clearTable = new DefaultTableModel();
+					table.setModel(clearTable);
+				}
+			}
+		});
+		listGuildBox.setBounds(57, 5, 200, 25);
+		tabGuild1.add(listGuildBox);
+		
+		//Handle Join Guild Button
+		JButton btnJoin = new JButton("Join Guild");
+		btnJoin.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				String selectedGuild = (String) listGuildBox.getSelectedItem();
+				if (!(selectedGuild.equals("(no guild selected)"))) {
+					try {
+						ResultSet rs = stmt.executeQuery("select AccountID from BelongsTo where Guildname='" + selectedGuild + "' and AccountID="+accountID);
+						if (rs.next()) {
+							JOptionPane.showMessageDialog(null, "You are already a member of the guild: " + selectedGuild);
+						}
+						else {
+							try {
+								rs = stmt.executeQuery("insert into BelongsTo values('" +selectedGuild+ "', " +accountID+")");
+								//Update the label information
+								rs = stmt.executeQuery("select count(AccountID) as Members"
+										+ "				from BelongsTo"
+										+ "				where GuildName='" + selectedGuild + "'");
+								while(rs.next()) {
+									lblMembersFill.setText(rs.getString("Members"));
+								}
+								guildBox.removeAllItems();
+								rs = stmt.executeQuery("select distinct * from BelongsTo where AccountID=" +accountID);
+								while(rs.next()) {
+									guildBox.addItem(rs.getString("GuildName"));
+								}
+								JOptionPane.showMessageDialog(null, "Join Guild Successful!");
+								
+							} catch (SQLException e) {
+								e.printStackTrace();
+							}
+						}
+					} catch(SQLException e) {
+						e.printStackTrace();
+					}
+				}
+				else {
+					JOptionPane.showMessageDialog(null, "No guild has been selected.");
+				}
+			}
+		});
+		btnJoin.setBounds(17, 167, 115, 23);
+		tabGuild1.add(btnJoin);
+		
+		//Handle Leave Guild button
+		JButton btnLeave = new JButton("Leave Guild");
+		btnLeave.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				String selectedGuild = (String) listGuildBox.getSelectedItem();
+				if (!(selectedGuild.equals("(no guild selected)"))) {
+					try {
+						ResultSet rs = stmt.executeQuery("select AccountID from BelongsTo where Guildname='" + selectedGuild + "' and AccountID="+accountID);
+						if (!rs.next()) {
+							JOptionPane.showMessageDialog(null, "You are not a member of the guild: " + selectedGuild);
+						}
+						else {
+							try {
+								rs = stmt.executeQuery("delete from BelongsTo where accountid=" + accountID + "and GuildName='" + selectedGuild + "'");
+								rs = stmt.executeQuery("delete from GuildLeader where accountid=" + accountID);
+								//Update the label information
+								rs = stmt.executeQuery("select GL.AccountID from GuildLeader GL, Guild_Owns GO where GO.GuildName='" +selectedGuild+ "'");
+								if(!rs.next()) lblGuildLeaderFill.setText("(no guild leader)");
+								rs = stmt.executeQuery("select count(AccountID) as Members"
+										+ "				from BelongsTo"
+										+ "				where GuildName='" + selectedGuild + "'");
+								while(rs.next()) {
+									lblMembersFill.setText(rs.getString("Members"));
+								}
+								guildBox.removeAllItems();
+								rs = stmt.executeQuery("select distinct * from BelongsTo where AccountID=" +accountID);
+								while(rs.next()) {
+									guildBox.addItem(rs.getString("GuildName"));
+								}
+								JOptionPane.showMessageDialog(null, "Leave Guild Successful!");
+							} catch (SQLException e) {
+								e.printStackTrace();
+							}
+						}
+					} catch(SQLException e) {
+						e.printStackTrace();
+					}
+				}
+				else {
+					JOptionPane.showMessageDialog(null, "No guild has been selected.");
+				}
+			}
+		});
+		btnLeave.setBounds(140, 167, 115, 23);
+		tabGuild1.add(btnLeave);
 		
 		JPanel panel_8 = new JPanel();
 		panel_8.setBounds(29, 196, 641, 104);
@@ -383,13 +535,18 @@ public class Main_Window extends JFrame{
 		tabAdmin.add(btnNewButton);
 		
 	    //Display Player Info
-		try {			
-			ResultSet rs = stmt.executeQuery("select * from Player1 p1, Player2 p2 where p1.AccountID = p2.AccountID and p1.AccountID = " + accountID);
-			while(rs.next()){ 
+		try {
+			ResultSet rs = stmt.executeQuery("select * from Player1 p1, Player2 p2 "
+										+ "   where p1.AccountID = p2.AccountID and p1.AccountID = " +accountID);
+			while(rs.next()){
 				lblAccountId.setText(lblAccountId.getText() + rs.getString("AccountID"));
 				lblAccountName.setText(lblAccountName.getText() + rs.getString("AccountName"));
 				lblServer.setText(lblServer.getText() + rs.getString("Server"));
-			}		
+			}
+			rs = stmt.executeQuery("select distinct * from BelongsTo where AccountID=" +accountID);
+			while(rs.next()) {
+				guildBox.addItem(rs.getString("GuildName"));
+			}
 		} catch (SQLException e1) {
 			e1.printStackTrace();
 		}

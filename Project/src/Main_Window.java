@@ -52,10 +52,13 @@ import javax.swing.JList;
 public class Main_Window extends JFrame{
 	private JTable table;
 	private static Connection connection;
-	private Statement stmt;
+	private static Statement stmt;
+	public static String sSelectedChar;
+	public static String sAccountID;
 	
 	public Main_Window(final String accountID){
-		
+		sAccountID = accountID;
+		sSelectedChar = "";
 		//Connect to the database
 		try {
 			DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
@@ -65,6 +68,7 @@ public class Main_Window extends JFrame{
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+		 
 		
 		setBounds(325,150,707,364);
 		getContentPane().setLayout(null);
@@ -195,33 +199,7 @@ public class Main_Window extends JFrame{
 			e1.printStackTrace();
 		}
 		
-		//Fill in the information of the selected Character
-		comboBox.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent e) {
-				String selectedChar = (String) comboBox.getSelectedItem();
-				if(!(selectedChar.equals("(No character selected)"))) {
-					try {
-						ResultSet rs = stmt.executeQuery("Select * from CharacterOwned CO where CharName='"+ selectedChar + "'");
-						while(rs.next()) {
-							lblNameFill.setText(selectedChar);
-							lblClassFill.setText(rs.getString("Class"));
-							lblLevelFill.setText(rs.getString("Levels"));
-							lblRaceFill.setText(rs.getString("Race"));
-//							lblGoldFill.setText(rs.getString("Gold"));
-						}
-					} catch (SQLException e1) {
-						e1.printStackTrace();
-					}
-				}
-				else {
-					lblNameFill.setText("");
-					lblClassFill.setText("");
-					lblLevelFill.setText("");
-					lblRaceFill.setText("");
-					lblGoldFill.setText("");
-				}
-			}
-		});
+
 		comboBox.setBounds(22, 34, 200, 27);
 		panel_5.add(comboBox);
 		
@@ -249,17 +227,19 @@ public class Main_Window extends JFrame{
 		tabbedPane.addTab("Market", null, panMarket, null);
 		panMarket.setLayout(null);
 		
-		JScrollPane s = new JScrollPane();
-		s.setBounds(23, 32, 214, 111);
-		panMarket.add(s);
+		final JTable tblSellOrders = new JTable();
+		JScrollPane srpSellOrders = new JScrollPane(tblSellOrders);
+		srpSellOrders.setBounds(23, 32, 214, 111);
+		panMarket.add(srpSellOrders);
 		
 		JLabel lblYourSellOrders = new JLabel("Your Sell Orders:");
 		lblYourSellOrders.setBounds(23, 10, 105, 16);
 		panMarket.add(lblYourSellOrders);
 		
-		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(249, 32, 214, 111);
-		panMarket.add(scrollPane);
+		final JTable tblBuyOrders = new JTable();
+		JScrollPane srpBuyOrders = new JScrollPane(tblBuyOrders);
+		srpBuyOrders.setBounds(249, 32, 203, 111);
+		panMarket.add(srpBuyOrders);
 		
 		JLabel lblBuyOrders = new JLabel("Your Buy Orders:");
 		lblBuyOrders.setBounds(249, 10, 105, 16);
@@ -290,17 +270,18 @@ public class Main_Window extends JFrame{
 		btnBuyService.setBounds(0, 82, 132, 29);
 		panBuySell.add(btnBuyService);
 		
-		JLabel lblCharMarket = new JLabel("Character: ");
-		lblCharMarket.setBounds(475, 32, 164, 16);
+		final JLabel lblCharMarket = new JLabel("Character: ");
+		lblCharMarket.setBounds(464, 32, 195, 16);
 		panMarket.add(lblCharMarket);
 		
-		JLabel lblGoldMarket = new JLabel("Gold:");
-		lblGoldMarket.setBounds(475, 52, 61, 16);
+		final JLabel lblGoldMarket = new JLabel("Gold:");
+		lblGoldMarket.setBounds(464, 60, 164, 16);
 		panMarket.add(lblGoldMarket);
 		
-		JScrollPane scrollPane_1 = new JScrollPane();
-		scrollPane_1.setBounds(171, 182, 292, 92);
-		panMarket.add(scrollPane_1);
+		final JTable tblTransaction = new JTable();
+		JScrollPane srpTransaction = new JScrollPane(tblTransaction);
+		srpTransaction.setBounds(171, 182, 292, 92);
+		panMarket.add(srpTransaction);
 		
 		JLabel lblTransactions = new JLabel("Transactions: ");
 		lblTransactions.setBounds(171, 165, 214, 16);
@@ -461,6 +442,8 @@ public class Main_Window extends JFrame{
 		btnJoin.setBounds(17, 167, 115, 23);
 		tabGuild1.add(btnJoin);
 		
+		
+		
 		//Handle Leave Guild button
 		JButton btnLeave = new JButton("Leave Guild");
 		btnLeave.addActionListener(new ActionListener() {
@@ -575,10 +558,6 @@ public class Main_Window extends JFrame{
 		final JComboBox cmbServer = new JComboBox();
 		cmbServer.setEnabled(false);
 		cmbServer.setBounds(29, 52, 140, 22);
-		cmbServer.addItem("North America 1");
-		cmbServer.addItem("North America 2");
-		cmbServer.addItem("Asia");
-		cmbServer.addItem("Europe");
 		panel_6.add(cmbServer);
 		
 		final JRadioButton rdbtnPlayersWith = new JRadioButton("<html>Players with > 2 characters and Level greater than: </html>");
@@ -611,7 +590,7 @@ public class Main_Window extends JFrame{
 		panel_6.add(cmbLevel);
 		
 		final JRadioButton rdbtnServicePurchaser = new JRadioButton("Service Purchaser");
-		rdbtnServicePurchaser.setName("BP");
+		rdbtnServicePurchaser.setName("SP");
 		rdbtnServicePurchaser.setFont(new Font("Lucida Grande", Font.PLAIN, 11));
 		rdbtnServicePurchaser.setBounds(0, 146, 127, 30);
 		panel_6.add(rdbtnServicePurchaser);
@@ -645,8 +624,8 @@ public class Main_Window extends JFrame{
 				{
 					ResultSet rs = null;
 					try {
-					rs = executeQuery("delete from Player1 where AccountID = " + tblAdmin.getModel().getValueAt(iRowSelected, 0));
-					rs = executeQuery("select P1.AccountID, p1.AccountName, p2.server from Player1 P1, Player2 P2 where P1.AccountID=P2.AccountID");
+					rs = exQuery("delete from Player1 where AccountID = " + tblAdmin.getModel().getValueAt(iRowSelected, 0));
+					rs = exQuery("select P1.AccountID, p1.AccountName, p2.server from Player1 P1, Player2 P2 where P1.AccountID=P2.AccountID");
 						tblAdmin.setModel(buildTableModel(rs));
 					} catch (SQLException e1) {
 						// TODO Auto-generated catch block
@@ -657,7 +636,6 @@ public class Main_Window extends JFrame{
 		});
 		btnDeletePlayer.setBounds(506, 262, 154, 28);
 		tabAdmin.add(btnDeletePlayer);
-		rdbtnServicePurchaser.setName("Success");
 		
 		JRadioButton rdbtAllPlayer = new JRadioButton("All Players");
 		rdbtAllPlayer.setName("AP");
@@ -673,11 +651,34 @@ public class Main_Window extends JFrame{
 		cmbPurchaser.addItem("Worst");
 		panel_6.add(cmbPurchaser);
 		
+		// fill the cmbServer
+		try {
+			ResultSet rs = exQuery("select server from player2 group by server");
+			while(rs.next()) {
+				cmbServer.addItem(rs.getString("server"));
+			}
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
 		// when place buy order button is pressed mb1
 		btnBuy.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				new BuySell_Window("Buy", "", Integer.parseInt(accountID)).setVisible(true);
+				if (sSelectedChar != "")
+					new BuySell_Window("Buy", "", Integer.parseInt(accountID)).setVisible(true);
+			}
+		});
+		
+		// when update button is pressed
+		btnUpdateMarket.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (sSelectedChar != "")
+				{
+					RefreshMarket(tblSellOrders, tblBuyOrders, lblGoldMarket, tblTransaction);
+				}
 			}
 		});
 		
@@ -685,7 +686,8 @@ public class Main_Window extends JFrame{
 		btnSell.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				new BuySell_Window("Sell", "", Integer.parseInt(accountID)).setVisible(true);
+				if (sSelectedChar != "")
+					new BuySell_Window("Sell", "", Integer.parseInt(accountID)).setVisible(true);
 			}
 		});
 		
@@ -735,6 +737,40 @@ public class Main_Window extends JFrame{
 			}
 		});
 		
+		//Fill in the information of the selected Character
+		comboBox.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				String selectedChar = (String) comboBox.getSelectedItem();
+				if(!(selectedChar.equals("(No character selected)"))) {
+					sSelectedChar = selectedChar;
+					try {
+						ResultSet rs = stmt.executeQuery("Select * from CharacterOwned CO where CharName='"+ selectedChar + "'");
+						while(rs.next()) {
+							lblNameFill.setText(selectedChar);
+							lblClassFill.setText(rs.getString("Class"));
+							lblLevelFill.setText(rs.getString("Levels"));
+							lblRaceFill.setText(rs.getString("Race"));
+//							lblGoldFill.setText(rs.getString("Gold"));
+							//lblGoldMarket.setText(rs.getString("Gold"));
+							lblCharMarket.setText(selectedChar);
+						}
+					} catch (SQLException e1) {
+						e1.printStackTrace();
+					}
+				}
+				else {
+					sSelectedChar = "";
+					lblNameFill.setText("");
+					lblClassFill.setText("");
+					lblLevelFill.setText("");
+					lblRaceFill.setText("");
+					lblGoldFill.setText("");
+					lblGoldMarket.setText("");
+					lblCharMarket.setText("");
+				}
+			}
+		});
+		
 		// show players button event handler
 		btnShowPlayers.addMouseListener(new MouseAdapter() {
 			@Override
@@ -745,7 +781,7 @@ public class Main_Window extends JFrame{
 				if (sName == "CH")
 				{
 					try {
-					rs = executeQuery("select AccountID, COUNT(*) as \"Number of Characters\" from CharacterOwned Group By AccountID");
+					rs = exQuery("select AccountID, COUNT(*) as \"Number of Characters\" from CharacterOwned Group By AccountID");
 						tblAdmin.setModel(buildTableModel(rs));
 					} catch (SQLException e1) {
 						// TODO Auto-generated catch block
@@ -757,7 +793,7 @@ public class Main_Window extends JFrame{
 					if (sName == "SV")
 					{
 						try {
-						rs = executeQuery("select P1.AccountName as \"Player Name\", P2.Server from Player1 P1, Player2 P2 where P1.AccountID=P2.AccountID and P2.server='" + cmbServer.getSelectedItem().toString() + "'");
+						rs = exQuery("select P1.AccountName as \"Player Name\", P2.Server from Player1 P1, Player2 P2 where P1.AccountID=P2.AccountID and P2.server='" + cmbServer.getSelectedItem().toString() + "'");
 
 							tblAdmin.setModel(buildTableModel(rs));
 						} catch (SQLException e1) {
@@ -770,7 +806,7 @@ public class Main_Window extends JFrame{
 						if (sName == "PW")
 						{
 							try {
-							rs = executeQuery("select c.AccountID from CharacterOwned c where c.Levels>" +  Integer.parseInt(cmbLevel.getSelectedItem().toString()) + "group by c.AccountID having COUNT(*)>1");
+							rs = exQuery("select c.AccountID from CharacterOwned c where c.Levels>" +  Integer.parseInt(cmbLevel.getSelectedItem().toString()) + "group by c.AccountID having COUNT(*)>1");
 								tblAdmin.setModel(buildTableModel(rs));
 							} catch (SQLException e1) {
 								// TODO Auto-generated catch block
@@ -779,7 +815,7 @@ public class Main_Window extends JFrame{
 						}
 						else
 						{
-							if (sName == "BP")
+							if (sName == "SP")
 							{
 								try {
 									String sAggregation = "";
@@ -789,7 +825,9 @@ public class Main_Window extends JFrame{
 									else
 										sAggregation = "MIN";
 									
-									rs = executeQuery("drop view Servicemoney; create view Servicemoney(AccountID, SumPrice) as select AccountID, AccountName as \"Player Name\", sum(s.Price) from Purchases p, Service s where p.ServiceID=s.ServiceID group by p.AccountID; select p.AccountName from Player1 p, Servicemoney s where p.AccountID = S. AccountID and s.SumPrice in (select " + sAggregation + "(SumPrice) from Servicemoney)");
+									//executeQuery("drop view Servicemoney");
+									exQuery("create view Servicemoney(AccountID, SumPrice) as select AccountID, sum(s.Price) from Purchases p, Service s where p.ServiceID=s.ServiceID group by p.AccountID");
+									rs = exQuery("select p.AccountName as \"Player Name\" from Player1 p, Servicemoney s where p.AccountID = S. AccountID and s.SumPrice in (select " + sAggregation + "(SumPrice) from Servicemoney)");
 									tblAdmin.setModel(buildTableModel(rs));
 								} catch (SQLException e1) {
 									// TODO Auto-generated catch block
@@ -798,10 +836,13 @@ public class Main_Window extends JFrame{
 							}
 							else
 							{
+		
 								if (sName == "PM")
 								{
 									try {
-									rs = executeQuery("drop view SumCharMoney; create view SumCharMoney(AccountID, SumMoney) as select c.AccountID,sum(i.Gold) from  CharacterOwned c, InventoryHad i where c.CharName=i.CharName group by c.AccountID; select p.AccountName from Player1 p, SumCharMoney s where p.AccountID = S. AccountID and s.SumMoney in (select MAX(SumMoney) from SumCharMoney)");
+										//executeQuery("drop view SumCharMoney");
+										exQuery("create view SumCharMoney(AccountID, SumMoney) as select c.AccountID,sum(i.Gold) from  CharacterOwned c, InventoryHad i where c.CharName=i.CharName group by c.AccountID");						
+										rs = exQuery("select p.AccountName as \"Player Name\" from Player1 p, SumCharMoney s where p.AccountID = s.AccountID and s.SumMoney in (select MAX(SumMoney) from SumCharMoney)");
 
 										tblAdmin.setModel(buildTableModel(rs));
 									} catch (SQLException e1) {
@@ -814,7 +855,7 @@ public class Main_Window extends JFrame{
 									if (sName == "AP")
 									{
 										try {
-											rs = executeQuery("select P1.AccountID, p1.AccountName, p2.server from Player1 P1, Player2 P2 where P1.AccountID=P2.AccountID");
+											rs = exQuery("select P1.AccountID, p1.AccountName, p2.server from Player1 P1, Player2 P2 where P1.AccountID=P2.AccountID");
 											tblAdmin.setModel(buildTableModel(rs));
 											btnDeletePlayer.setEnabled(true);
 										} catch (SQLException e1) {
@@ -853,7 +894,8 @@ public class Main_Window extends JFrame{
 		}
 	}
 	
-	public ResultSet executeQuery(String sQuery){
+	// exQueryM
+	public ResultSet exQuery(String sQuery){
 		ResultSet rs = null;
 		try {			
 			rs = stmt.executeQuery(sQuery);	
@@ -922,7 +964,12 @@ public class Main_Window extends JFrame{
 	{
 		ResultSet rs = null;
 		try {			
-			rs = stmt.executeQuery("select * from player1");
+			rs = stmt.executeQuery("select orderid from placebuy where charname = '" + sSelectedChar + "'");
+			jBuy.setModel(buildTableModel(rs));
+			rs = stmt.executeQuery("select orderid from placesell where charname = '" + sSelectedChar + "'");
+			jSell.setModel(buildTableModel(rs));
+			rs = stmt.executeQuery("select borderid as \"Buy ID\",sorderid as \"Sell ID\" from fulfills");
+			jTrans.setModel(buildTableModel(rs));
 			
 		} catch (SQLException e1) {
 			e1.printStackTrace();

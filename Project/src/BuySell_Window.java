@@ -26,6 +26,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.Font;
+import java.awt.Component;
 
 public class BuySell_Window extends JFrame {
 
@@ -34,33 +35,48 @@ public class BuySell_Window extends JFrame {
 	Connection connection;
 	Statement stmt;
 	ResultSet rs;
+	private JTextField txfQuantity;
+	private String sActionSelected;
+	final JLabel lblBuySellError = new JLabel("");
+	private boolean bSuccess;
+	
+	// elements
+	final JTable tblBuySellItems = new JTable();
+	final JLabel lblTitle = new JLabel("Title:");
+	JPanel panel = new JPanel();
+	final JLabel lblCost = new JLabel("Cost:");
+	final JButton btnAction = new JButton("Action");
+	JLabel lblQuantity = new JLabel("Quantity:");
+	JPanel panServices = new JPanel();	
+	final JTable tblPurchasedServices = new JTable();
+	JLabel lblPurchasedServices = new JLabel("Purchased Services:");
+	JScrollPane scrollPane = new JScrollPane(tblPurchasedServices);
+
 	
 	/**
 	 * Create the frame.
 	 */
 	public BuySell_Window(final String sAction, String sAccountName, int sAccountID) {
+		sActionSelected = sAction;
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 540, 409);
+		setBounds(100, 100, 702, 419);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
-		final JTable tblBuySellItems = new JTable();
 		JScrollPane srpBuySellItems = new JScrollPane(tblBuySellItems);
-		srpBuySellItems.setBounds(16, 23, 334, 341);
+		srpBuySellItems.setBounds(16, 23, 659, 258);
 		contentPane.add(srpBuySellItems);
 		
-		final JLabel lblTitle = new JLabel("Title:");
 		lblTitle.setBounds(16, 6, 84, 16);
 		contentPane.add(lblTitle);
 		
-		JPanel panel = new JPanel();
-		panel.setBounds(362, 23, 152, 142);
+		panel.setBounds(16, 286, 336, 119);
 		contentPane.add(panel);
 		panel.setLayout(null);
 		
-		final JLabel lblCost = new JLabel("Cost:");
+
 		lblCost.setBounds(6, 47, 61, 16);
 		panel.add(lblCost);
 		
@@ -70,57 +86,43 @@ public class BuySell_Window extends JFrame {
 		panel.add(txfCost);
 		txfCost.setColumns(10);
 		
-		final JButton btnAction = new JButton("Action");
+
 		btnAction.setBounds(6, 6, 117, 29);
 		panel.add(btnAction);
 		
-		final JLabel lblBuySellError = new JLabel("");
 		lblBuySellError.setFont(new Font("Lucida Grande", Font.PLAIN, 11));
 		lblBuySellError.setForeground(new Color(255, 0, 0));
-		lblBuySellError.setBounds(6, 95, 134, 41);
+		lblBuySellError.setBounds(157, 6, 173, 41);
 		panel.add(lblBuySellError);
+		
+		txfQuantity = new JTextField();
+		txfQuantity.setText("0");
+		txfQuantity.setColumns(10);
+		txfQuantity.setBounds(157, 64, 134, 28);
+		panel.add(txfQuantity);
+		
+		lblQuantity.setBounds(157, 47, 61, 16);
+		panel.add(lblQuantity);
+		
+		// purchased services panel
+		panServices.setBounds(352, 286, 332, 102);
+		contentPane.add(panServices);
+		panServices.setLayout(null);	
+		scrollPane.setBounds(0, 19, 341, 83);
+		panServices.add(scrollPane);		
+		lblPurchasedServices.setBounds(0, 0, 287, 16);
+		panServices.add(lblPurchasedServices);
 		
 		try {
 			DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
-			connection = DriverManager.getConnection("jdbc:oracle:thin:@dbhost.ugrad.cs.ubc.ca:1522:ug", "ora_i6k8", "a21014121");
+			connection = DriverManager.getConnection("jdbc:oracle:thin:@dbhost.ugrad.cs.ubc.ca:1522:ug", "ora_h3w8", "a56415136");
 			stmt = connection.createStatement();
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		
-		String sQuery = "";
-		if (sAction == "Buy")
-		{
-			lblTitle.setText("Buy Items:");
-			btnAction.setText("Buy");
-			sQuery = "";
-		}
-		else
-		{
-			if (sAction == "Sell")
-			{
-				lblTitle.setText("Sell Items:");
-				btnAction.setText("Sell");
-				sQuery = "";
-			}
-			else
-			{
-				lblTitle.setText("Services:");
-				btnAction.setText("Buy Service");
-				lblCost.setVisible(false);
-				txfCost.setVisible(false);
-				sQuery = "";
-			}
-		}
-		
-		try {
-			rs = executeQuery("select AccountID, COUNT(*) as \"Number of Characters\" from CharacterOwned Group By AccountID");
-			tblBuySellItems.setModel(Main_Window.buildTableModel(rs));
-			} catch (SQLException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+		update();
 		
 		addWindowListener(new WindowAdapter() {
 			@Override
@@ -142,7 +144,8 @@ public class BuySell_Window extends JFrame {
 			public void mouseClicked(MouseEvent e) {
 				
 				try{
-					int cost = Integer.parseInt(txfCost.getText());
+					int iPrice = Integer.parseInt(txfCost.getText());
+					int iQuantity = Integer.parseInt(txfQuantity.getText());
 					lblBuySellError.setText("");
 					String sQuery = "";
 					int iRowSelected = tblBuySellItems.getSelectedRow();
@@ -150,49 +153,129 @@ public class BuySell_Window extends JFrame {
 					
 					if (iRowSelected != -1)
 					{
-						if (sAction == "Buy")
+						if (sAction == "Buy" )
 						{
-							tblBuySellItems.getModel().getValueAt(iRowSelected, 0);
-							sQuery = "";
+							if (iPrice > 0 && iQuantity > 0)
+							{
+								sQuery = "insert into placebuy values ('" + Main_Window.sSelectedChar + "',sequencebuy.nextval,"
+								+ tblBuySellItems.getModel().getValueAt(iRowSelected, 2) + ","
+								+ iPrice + ","
+								+ iQuantity + ")";
+							}
+							else
+							{
+								sQuery = "";
+								lblBuySellError.setText("<html>Price and Quantity <br> must be larger than 0</html>");
+							}
 						}
 						else
 						{
 							if (sAction == "Sell")
 							{
-								tblBuySellItems.getModel().getValueAt(iRowSelected, 0);
-								sQuery = "";
+								if (iPrice > 0 && iQuantity > 0)
+								{
+									tblBuySellItems.getModel().getValueAt(iRowSelected, 0);
+									sQuery = "insert into placesell (charname,orderid,itemid,sellprice,quantity) values ('" + Main_Window.sSelectedChar + "', sequencesell.nextval,"
+											+ tblBuySellItems.getModel().getValueAt(iRowSelected, 0) + ","
+											+ iPrice + ","
+											+ iQuantity + ")";
+									System.out.println(sQuery);
+								}
+								else
+								{
+									sQuery = "";
+									lblBuySellError.setText("<html>Price and Quantity <br> must be larger than 0</html>");
+								}
 							}
 							else
 							{
-								tblBuySellItems.getModel().getValueAt(iRowSelected, 0);
-								sQuery = "";
+								sQuery = "insert into purchases values (" + Main_Window.sAccountID + ", " + tblBuySellItems.getModel().getValueAt(iRowSelected, 0) + ")";
 							}
 						}
+						if (sQuery != "")
+						{
 							ResultSet rs = null;
 							rs = executeQuery(sQuery);
-							rs = executeQuery("select P1.AccountID, p1.AccountName, p2.server from Player1 P1, Player2 P2 where P1.AccountID=P2.AccountID");
+							if (bSuccess)
+								if (sAction != "Service")
+									dispose();
+								else
+									update();
+						}
+							//rs = executeQuery("select P1.AccountID, p1.AccountName, p2.server from Player1 P1, Player2 P2 where P1.AccountID=P2.AccountID");*/
 							//tblBuySellItems.setModel(buildTableModel(rs));
 					}
 				}
 				catch (NumberFormatException e1)
 				{
-					lblBuySellError.setText("<html>Please Enter Cost <br> As Integer</html>");
+					lblBuySellError.setText("<html>Please Enter Price <br>and Quantity As Integer</html>");
 				}
 			}
 		});
 	}
 
+	public void update()
+	{
+		String sQuery = "";
+		if (sActionSelected == "Buy")
+		{
+			lblTitle.setText("Buy Items:");
+			btnAction.setText("Buy");
+			panServices.setVisible(false);
+			sQuery = "select * from placesell";
+		}
+		else
+		{
+			if (sActionSelected == "Sell")
+			{
+				lblTitle.setText("Sell Items:");
+				btnAction.setText("Sell");
+				panServices.setVisible(false);
+				sQuery = "select i.itemid from ininventory n, item i where i.itemid = n.itemid and n.charname = '" + Main_Window.sSelectedChar + "'";
+				System.out.println(sQuery);
+			}
+			else
+			{
+				lblTitle.setText("Services:");
+				btnAction.setText("Buy Service");
+				lblCost.setVisible(false);
+				txfCost.setVisible(false);
+				lblQuantity.setVisible(false);
+				txfQuantity.setVisible(false);
+				sQuery = "select s.serviceid, s.name from purchases p, service s where accountid = " + Main_Window.sAccountID + " and  p.serviceid = s.serviceid";
+				rs = executeQuery(sQuery);
+				try {
+					tblPurchasedServices.setModel(Main_Window.buildTableModel(rs));
+				} catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				sQuery = "select * from service";
+			}
+		}
+		
+		try {
+			rs = executeQuery(sQuery);
+			tblBuySellItems.setModel(Main_Window.buildTableModel(rs));
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+	}
 	// executes query
 	public ResultSet executeQuery(String sQuery){
 		ResultSet rs = null;
 		try {			
 			rs = stmt.executeQuery(sQuery);	
+			bSuccess = true;
 		} catch (SQLException e1) {
-			e1.printStackTrace();
+			if (sActionSelected == "Service")
+				lblBuySellError.setText("<html>You already purchased <br> this service</html>");
+			else
+				e1.printStackTrace();
+			bSuccess = false;
 		}
 		
 		return rs;
 	}
-	
-
 }

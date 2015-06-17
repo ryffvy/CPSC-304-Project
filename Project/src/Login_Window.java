@@ -64,6 +64,7 @@ public class Login_Window extends JFrame {
 				try {
 					DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
 																												//ora_i6k8    a21014121
+					//connection = DriverManager.getConnection("jdbc:oracle:thin:@dbhost.ugrad.cs.ubc.ca:1522:ug", "ora_h3w8", "a56415136");
 					connection = DriverManager.getConnection("jdbc:oracle:thin:@dbhost.ugrad.cs.ubc.ca:1522:ug", "ora_h3w8", "a56415136");
 					stmt = connection.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.HOLD_CURSORS_OVER_COMMIT);
 				} catch (SQLException e1) {
@@ -109,13 +110,19 @@ public class Login_Window extends JFrame {
 		
 		// Drop down menu
 		final Choice ddmServer = new Choice();
+		try {
+			ResultSet rs = exQuery("select server from player2 group by server");
+			while(rs.next()) {
+				ddmServer.addItem(rs.getString("server"));
+			}
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
 		ddmServer.setVisible(false);
 		ddmServer.setEnabled(false);
 		ddmServer.setBounds(144, 217, 182, 26);
-		ddmServer.add("North America 1");
-		ddmServer.add("North America 2");
-		ddmServer.add("Asia");
-		ddmServer.add("Europe");
 		
 		
 		final JButton btnNewPlayer = new JButton("Create an account");
@@ -245,7 +252,22 @@ public class Login_Window extends JFrame {
 		textPlayerIDMax.setBounds(336, 111, 100, 20);
 		contentPane.add(textPlayerIDMax);
 		
+	}
+	public ResultSet exQuery(String sQuery){
+		ResultSet rs = null;
+		try {			
+			DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
+			//ora_i6k8    a21014121
+			//connection = DriverManager.getConnection("jdbc:oracle:thin:@dbhost.ugrad.cs.ubc.ca:1522:ug", "ora_h3w8", "a56415136");
+			connection = DriverManager.getConnection("jdbc:oracle:thin:@dbhost.ugrad.cs.ubc.ca:1522:ug", "ora_h3w8", "a56415136");
+			stmt = connection.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE, ResultSet.HOLD_CURSORS_OVER_COMMIT);
 
+			rs = stmt.executeQuery(sQuery);	
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		}
+		
+		return rs;
 	}
 	
 	public class JTextFieldLimit extends PlainDocument {

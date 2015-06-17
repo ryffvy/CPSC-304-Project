@@ -171,7 +171,7 @@ public class Login_Window extends JFrame {
 		});
 		btnNewPlayer.setBounds(144, 180, 182, 29);
 		contentPane.add(btnNewPlayer);
-		
+		contentPane.getRootPane().setDefaultButton(btnLoging);
 		btnLoging.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				try {

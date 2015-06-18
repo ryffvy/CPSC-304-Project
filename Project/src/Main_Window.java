@@ -90,10 +90,17 @@ public class Main_Window extends JFrame{
 	JButton btnBuyService = new JButton("Buy Service");
 	JButton btnShowPlayers = new JButton("Show Players");
 	JRadioButton rdbtAllPlayer = new JRadioButton("All Players");
+	JPanel panMarket = new JPanel();
+	JPanel tabAdmin = new JPanel();
+	JPanel panPlayerInfo = new JPanel();
+	JPanel panel_8 = new JPanel();
+	JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 	
 	public Main_Window(final String accountID, final String userType){
 		sAccountID = accountID;
 		sSelectedChar = "";
+		sUserType = userType;
+		
 		//Connect to the database
 		try {
 			DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
@@ -106,6 +113,7 @@ public class Main_Window extends JFrame{
 		
 		//Create the design of the application
 		createDesign();
+		SetAccess();
 		
 		
 		//Create and add the list of Characters the Player owns into the combo box
@@ -166,7 +174,7 @@ public class Main_Window extends JFrame{
 				String selectedChar = (String) comboBox.getSelectedItem();
 				if (!(selectedChar.equals("(No character selected)"))) {
 					try {
-						ResultSet rs = stmt.executeQuery("select I.ItemName, IIN.Quantity "
+						ResultSet rs = stmt.executeQuery("select I.ItemName as \"Item Name\", IIN.Quantity, I.ItemID as \"Item ID\""
 								+ "						  from Item I, InInventory IIN"
 								+ "						  where IIN.CharName='" + selectedChar + "' and IIN.ItemID=I.ItemID"); 
 						displayTable(rs, selectedChar + "'s Inventory");
@@ -187,7 +195,7 @@ public class Main_Window extends JFrame{
 				String selectedChar = (String) comboBox.getSelectedItem();
 				if (!(selectedChar.equals("(No character selected)"))) {
 					try {
-						ResultSet rs = stmt.executeQuery("select I.ItemName, IIN.Quantity "
+						ResultSet rs = stmt.executeQuery("select I.ItemName as \"Item Name\", IIN.Quantity, I.ItemID as \"Item ID\""
 								+ "						  from Item I, InInventory IIN"
 								+ "						  where IIN.CharName='" + selectedChar + "' and IIN.ItemID=I.ItemID"); 
 						displayTable(rs, selectedChar + "'s Inventory");
@@ -252,7 +260,7 @@ public class Main_Window extends JFrame{
 							lblMembersFill.setText(rs.getString("Members"));
 						}
 						//Display a table of all members in the selected guild
-						rs = stmt.executeQuery("select P1.AccountName from Player1 P1, BelongsTo BT where BT.GuildName='" +selectedGuild+ "' and BT.AccountID=P1.AccountID");
+						rs = stmt.executeQuery("select P1.AccountName as \"Account Name\" from Player1 P1, BelongsTo BT where BT.GuildName='" +selectedGuild+ "' and BT.AccountID=P1.AccountID");
 						table.setModel(buildTableModel(rs));
 					} catch (SQLException e1) {
 						e1.printStackTrace();
@@ -276,7 +284,7 @@ public class Main_Window extends JFrame{
 				String selectedGuild = (String) listGuildBox.getSelectedItem();
 				if (!(selectedGuild.equals("(no guild selected)"))) {
 					try {
-						ResultSet rs = stmt.executeQuery("select AccountID from BelongsTo where Guildname='" + selectedGuild + "' and AccountID="+accountID);
+						ResultSet rs = stmt.executeQuery("select AccountID as \"Account ID\" from BelongsTo where Guildname='" + selectedGuild + "' and AccountID="+accountID);
 						if (rs.next()) {
 							JOptionPane.showMessageDialog(null, "You are already a member of the guild: " + selectedGuild);
 						}
@@ -585,7 +593,7 @@ public class Main_Window extends JFrame{
 						if (sName == "PW")
 						{
 							try {
-							rs = exQuery("select c.AccountID from CharacterOwned c where c.Levels>" +  Integer.parseInt(cmbLevel.getSelectedItem().toString()) + "group by c.AccountID having COUNT(*)>1");
+							rs = exQuery("select c.AccountID as \"Account ID\" from CharacterOwned c where c.Levels>" +  Integer.parseInt(cmbLevel.getSelectedItem().toString()) + "group by c.AccountID having COUNT(*)>1");
 								tblAdmin.setModel(buildTableModel(rs));
 							} catch (SQLException e1) {
 								e1.printStackTrace();
@@ -733,15 +741,31 @@ public class Main_Window extends JFrame{
         return null;
     }
 	
+	public void SetAccess(){
+		if (sUserType == "Admin")
+		{
+			btnJoin.setEnabled(false);
+			btnLeave.setEnabled(false);
+			
+			tabbedPane.remove(0);
+			tabbedPane.remove(0);
+		}
+		else
+		{
+			tabbedPane.remove(3);
+			panel_8.setVisible(false);
+		}
+	}
+	
 	
 	//Update all objects' displaying information
 	public void RefreshMarket(JTable jSell, JTable jBuy, JTable jTrans )
 	{
 		ResultSet rs = null;
 		try {			
-			rs = stmt.executeQuery("select orderid from placebuy where charname = '" + sSelectedChar + "'");
+			rs = stmt.executeQuery("select orderid as \"Order ID\" from placebuy where charname = '" + sSelectedChar + "'");
 			jBuy.setModel(buildTableModel(rs));
-			rs = stmt.executeQuery("select orderid from placesell where charname = '" + sSelectedChar + "'");
+			rs = stmt.executeQuery("select orderid  as \"Order ID\" from placesell where charname = '" + sSelectedChar + "'");
 			jSell.setModel(buildTableModel(rs));
 			rs = stmt.executeQuery("select sorderid as \"Sell ID\",borderid as \"Buy ID\" from fulfills");
 			jTrans.setModel(buildTableModel(rs));
@@ -760,11 +784,9 @@ public class Main_Window extends JFrame{
 		setBounds(325,150,707,364);
 		getContentPane().setLayout(null);
 		
-		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		tabbedPane.setBounds(6, 0, 697, 342);
 		getContentPane().add(tabbedPane);
 		
-		JPanel panPlayerInfo = new JPanel();
 		tabbedPane.addTab("Player Info", null, panPlayerInfo, null);
 		panPlayerInfo.setLayout(null);
 		
@@ -774,7 +796,7 @@ public class Main_Window extends JFrame{
 		panel.setLayout(null);
 		
 		JLabel lblInfo = new JLabel("Player Info: ");
-		lblInfo.setBounds(6, 6, 70, 16);
+		lblInfo.setBounds(6, 6, 238, 16);
 		panel.add(lblInfo);
 		
 		JPanel panel_1 = new JPanel();
@@ -820,7 +842,7 @@ public class Main_Window extends JFrame{
 		
 		JLabel lblClass = new JLabel("Class: ");
 		JLabel lblCharacterInfo = new JLabel("Character Info: ");
-		lblCharacterInfo.setBounds(0, 6, 94, 16);
+		lblCharacterInfo.setBounds(0, 6, 210, 16);
 		panel_2.add(lblCharacterInfo);
 		
 		JLabel lblLevel = new JLabel("Level: ");
@@ -858,7 +880,6 @@ public class Main_Window extends JFrame{
 		lblGoldFill.setBounds(48, 120, 150, 16);
 		panel_3.add(lblGoldFill);
 		
-		JPanel panMarket = new JPanel();
 		tabbedPane.addTab("Market", null, panMarket, null);
 		panMarket.setLayout(null);
 		
@@ -917,11 +938,11 @@ public class Main_Window extends JFrame{
 		panBuySell.add(btnBuyService);
 		
 		final JLabel lblCharMarket = new JLabel("Character: ");
-		lblCharMarket.setBounds(464, 32, 67, 16);
+		lblCharMarket.setBounds(464, 32, 68, 16);
 		panMarket.add(lblCharMarket);
 		
 		final JLabel lblGoldMarket = new JLabel("Gold:");
-		lblGoldMarket.setBounds(464, 60, 30, 16);
+		lblGoldMarket.setBounds(464, 60, 38, 16);
 		panMarket.add(lblGoldMarket);
 		
 		JScrollPane srpTransaction = new JScrollPane(tblTransaction);
@@ -968,7 +989,6 @@ public class Main_Window extends JFrame{
 		lblGuild_1.setBounds(17, 6, 41, 23);
 		tabGuild1.add(lblGuild_1);
 		
-		JPanel panel_8 = new JPanel();
 		panel_8.setBounds(17, 196, 653, 104);
 		tabGuild1.add(panel_8);
 		panel_8.setLayout(null);
@@ -995,10 +1015,10 @@ public class Main_Window extends JFrame{
 		listGuildBox.setBounds(57, 5, 200, 25);
 		tabGuild1.add(listGuildBox);
 		
-		btnJoin.setBounds(17, 167, 115, 23);
+		btnJoin.setBounds(17, 164, 115, 26);
 		tabGuild1.add(btnJoin);
 		
-		btnLeave.setBounds(140, 167, 115, 23);
+		btnLeave.setBounds(140, 164, 115, 26);
 		tabGuild1.add(btnLeave);
 		
 		JLabel label_2 = new JLabel("Add Player:");
@@ -1025,7 +1045,6 @@ public class Main_Window extends JFrame{
 		panel_8.add(btnAdd);
 		
 		//Create an Admin tab
-		JPanel tabAdmin = new JPanel();
 		tabAdmin.setVisible(false);
 		tabbedPane.addTab("Admin", null, tabAdmin, null);
 		tabAdmin.setLayout(null);

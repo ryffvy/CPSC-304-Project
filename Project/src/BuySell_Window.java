@@ -175,11 +175,11 @@ public class BuySell_Window extends JFrame {
 								if (iPrice > 0 && iQuantity > 0)
 								{
 									tblBuySellItems.getModel().getValueAt(iRowSelected, 0);
-									sQuery = "insert into placesell (charname,orderid,itemid,sellprice,quantity) values ('" + Main_Window.sSelectedChar + "', sequencesell.nextval,"
+									sQuery = "insert into placesell values ('" + Main_Window.sSelectedChar + "', sequencesell.nextval,"
 											+ tblBuySellItems.getModel().getValueAt(iRowSelected, 0) + ","
 											+ iPrice + ","
-											+ iQuantity + ")";
-									System.out.println(sQuery);
+											+ iQuantity 
+											+ ", sysdate, 1)";
 								}
 								else
 								{
@@ -232,7 +232,6 @@ public class BuySell_Window extends JFrame {
 				btnAction.setText("Sell");
 				panServices.setVisible(false);
 				sQuery = "select i.itemid from ininventory n, item i where i.itemid = n.itemid and n.charname = '" + Main_Window.sSelectedChar + "'";
-				System.out.println(sQuery);
 			}
 			else
 			{

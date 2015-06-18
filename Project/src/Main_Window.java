@@ -54,6 +54,11 @@ public class Main_Window extends JFrame{
 	private static Statement stmt;
 	public static String sSelectedChar;
 	public static String sAccountID;
+	public final JLabel lblGoldFill = new JLabel();
+	public final JLabel mktGoldFill = new JLabel();
+	public final JTable tblSellOrders = new JTable();
+	public final JTable tblBuyOrders = new JTable();
+	public final JTable tblTransaction = new JTable();
 	
 	public Main_Window(final String accountID){
 		sAccountID = accountID;
@@ -174,9 +179,20 @@ public class Main_Window extends JFrame{
 		JLabel lblGold = new JLabel("Gold: ");
 		lblGold.setBounds(6, 120, 44, 16);
 		panel_3.add(lblGold);
-		final JLabel lblGoldFill = new JLabel();
+		 
 		lblGoldFill.setBounds(48, 120, 150, 16);
 		panel_3.add(lblGoldFill);
+		
+		JPanel panMarket = new JPanel();
+		tabbedPane.addTab("Market", null, panMarket, null);
+		panMarket.setLayout(null);
+		
+		final JLabel mktCharFill = new JLabel();
+		mktCharFill.setBounds(534, 32, 105, 16);
+		panMarket.add(mktCharFill);
+		
+		mktGoldFill.setBounds(522, 59, 117, 16);
+		panMarket.add(mktGoldFill);
 		
 		
 		//Create and add the list of Characters the Player owns into the combo box
@@ -211,6 +227,9 @@ public class Main_Window extends JFrame{
 							lblLevelFill.setText(rs.getString("Levels"));
 							lblRaceFill.setText(rs.getString("Race"));
 							lblGoldFill.setText(rs.getString("Gold"));
+							sSelectedChar = selectedChar;
+							mktCharFill.setText(selectedChar);
+							mktGoldFill.setText(rs.getString("Gold"));
 						}
 					} catch (SQLException e1) {
 						e1.printStackTrace();
@@ -222,6 +241,13 @@ public class Main_Window extends JFrame{
 					lblLevelFill.setText("");
 					lblRaceFill.setText("");
 					lblGoldFill.setText("");
+					mktCharFill.setText("");
+					mktGoldFill.setText("");
+					sSelectedChar = "";
+					DefaultTableModel clearTable = new DefaultTableModel();
+					tblSellOrders.setModel(clearTable);
+					tblBuyOrders.setModel(clearTable);
+					tblTransaction.setModel(clearTable);
 				}
 			}
 		});
@@ -251,11 +277,7 @@ public class Main_Window extends JFrame{
 		btnViewInventory.setBounds(534, 105, 136, 50);
 		panPlayerInfo.add(btnViewInventory);
 		
-		JPanel panMarket = new JPanel();
-		tabbedPane.addTab("Market", null, panMarket, null);
-		panMarket.setLayout(null);
 		
-		final JTable tblSellOrders = new JTable();
 		JScrollPane srpSellOrders = new JScrollPane(tblSellOrders);
 		srpSellOrders.setBounds(23, 32, 214, 111);
 		panMarket.add(srpSellOrders);
@@ -264,7 +286,7 @@ public class Main_Window extends JFrame{
 		lblYourSellOrders.setBounds(23, 10, 105, 16);
 		panMarket.add(lblYourSellOrders);
 		
-		final JTable tblBuyOrders = new JTable();
+		
 		JScrollPane srpBuyOrders = new JScrollPane(tblBuyOrders);
 		srpBuyOrders.setBounds(249, 32, 203, 111);
 		panMarket.add(srpBuyOrders);
@@ -274,6 +296,24 @@ public class Main_Window extends JFrame{
 		panMarket.add(lblBuyOrders);
 		
 		JButton button = new JButton("View Inventory");
+		button.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				String selectedChar = (String) comboBox.getSelectedItem();
+				if (!(selectedChar.equals("(No character selected)"))) {
+					try {
+						ResultSet rs = stmt.executeQuery("select I.ItemName, IIN.Quantity "
+								+ "						  from Item I, InInventory IIN"
+								+ "						  where IIN.CharName='" + selectedChar + "' and IIN.ItemID=I.ItemID"); 
+						displayTable(rs, selectedChar + "'s Inventory");
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
+				}
+				else {
+					JOptionPane.showMessageDialog(null, "No character is selected.");
+				}
+			}
+		});
 		button.setBounds(503, 93, 136, 50);
 		panMarket.add(button);
 		
@@ -299,14 +339,13 @@ public class Main_Window extends JFrame{
 		panBuySell.add(btnBuyService);
 		
 		final JLabel lblCharMarket = new JLabel("Character: ");
-		lblCharMarket.setBounds(464, 32, 195, 16);
+		lblCharMarket.setBounds(464, 32, 67, 16);
 		panMarket.add(lblCharMarket);
 		
 		final JLabel lblGoldMarket = new JLabel("Gold:");
-		lblGoldMarket.setBounds(464, 60, 164, 16);
+		lblGoldMarket.setBounds(464, 60, 30, 16);
 		panMarket.add(lblGoldMarket);
 		
-		final JTable tblTransaction = new JTable();
 		JScrollPane srpTransaction = new JScrollPane(tblTransaction);
 		srpTransaction.setBounds(171, 182, 292, 92);
 		panMarket.add(srpTransaction);
@@ -812,7 +851,7 @@ public class Main_Window extends JFrame{
 			public void mouseClicked(MouseEvent e) {
 				if (sSelectedChar != "")
 				{
-					RefreshMarket(tblSellOrders, tblBuyOrders, lblGoldMarket, tblTransaction);
+					RefreshMarket(tblSellOrders, tblBuyOrders, tblTransaction);
 				}
 			}
 		});
@@ -869,40 +908,6 @@ public class Main_Window extends JFrame{
 			public void itemStateChanged(ItemEvent e) {
 				if (!rdbtnPlayersWith.isSelected())
 					btnDeletePlayer.setEnabled(false);
-			}
-		});
-		
-		//Fill in the information of the selected Character
-		comboBox.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent e) {
-				String selectedChar = (String) comboBox.getSelectedItem();
-				if(!(selectedChar.equals("(No character selected)"))) {
-					sSelectedChar = selectedChar;
-					try {
-						ResultSet rs = stmt.executeQuery("Select * from CharacterOwned CO where CharName='"+ selectedChar + "'");
-						while(rs.next()) {
-							lblNameFill.setText(selectedChar);
-							lblClassFill.setText(rs.getString("Class"));
-							lblLevelFill.setText(rs.getString("Levels"));
-							lblRaceFill.setText(rs.getString("Race"));
-//							lblGoldFill.setText(rs.getString("Gold"));
-							//lblGoldMarket.setText(rs.getString("Gold"));
-							lblCharMarket.setText(selectedChar);
-						}
-					} catch (SQLException e1) {
-						e1.printStackTrace();
-					}
-				}
-				else {
-					sSelectedChar = "";
-					lblNameFill.setText("");
-					lblClassFill.setText("");
-					lblLevelFill.setText("");
-					lblRaceFill.setText("");
-					lblGoldFill.setText("");
-					lblGoldMarket.setText("");
-					lblCharMarket.setText("");
-				}
 			}
 		});
 		
@@ -1096,7 +1101,7 @@ public class Main_Window extends JFrame{
         return null;
     }
 	
-	public void RefreshMarket(JTable jSell, JTable jBuy, JLabel lblGold, JTable jTrans )
+	public void RefreshMarket(JTable jSell, JTable jBuy, JTable jTrans )
 	{
 		ResultSet rs = null;
 		try {			
@@ -1104,8 +1109,13 @@ public class Main_Window extends JFrame{
 			jBuy.setModel(buildTableModel(rs));
 			rs = stmt.executeQuery("select orderid from placesell where charname = '" + sSelectedChar + "'");
 			jSell.setModel(buildTableModel(rs));
-			rs = stmt.executeQuery("select borderid as \"Buy ID\",sorderid as \"Sell ID\" from fulfills");
+			rs = stmt.executeQuery("select sorderid as \"Sell ID\",borderid as \"Buy ID\" from fulfills");
 			jTrans.setModel(buildTableModel(rs));
+			rs = stmt.executeQuery("select * from InventoryHad where CharName='" +sSelectedChar+ "'");
+			if (!rs.next()) {
+				lblGoldFill.setText(rs.getString("Gold"));
+				mktGoldFill.setText(rs.getString("Gold"));
+			}
 			
 		} catch (SQLException e1) {
 			e1.printStackTrace();

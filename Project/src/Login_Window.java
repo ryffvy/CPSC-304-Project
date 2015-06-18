@@ -199,7 +199,7 @@ public class Login_Window extends JFrame {
 						rs.close();
 						stmt.close();
 						connection.close();
-						new Main_Window(password).setVisible(true);
+						new Main_Window(password, "Player").setVisible(true);
 					}
 					else {
 						JOptionPane.showMessageDialog(null, "Access Denied.");

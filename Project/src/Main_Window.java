@@ -195,8 +195,6 @@ public class Main_Window extends JFrame{
 		
 		mktGoldFill.setBounds(522, 59, 117, 16);
 		panMarket.add(mktGoldFill);
-
-		
 		
 		
 		//Create and add the list of Characters the Player owns into the combo box
@@ -234,7 +232,6 @@ public class Main_Window extends JFrame{
 							sSelectedChar = selectedChar;
 							mktCharFill.setText(selectedChar);
 							mktGoldFill.setText(rs.getString("Gold"));
-			
 						}
 					} catch (SQLException e1) {
 						e1.printStackTrace();

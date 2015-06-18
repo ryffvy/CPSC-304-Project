@@ -28,6 +28,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
 import java.util.Enumeration;
 import java.util.Vector;
@@ -51,6 +52,7 @@ public class Main_Window extends JFrame{
 	final JLabel lblGuildLeaderFill = new JLabel();
 	final JLabel lblMembersFill = new JLabel();
 	final JLabel lblGuildServerFill = new JLabel();
+//	final JLabel lblRosterSizeFill = new JLabel();
 	final JTextField lblRosterSizeFill = new JTextField();
 	JLabel lblGuildMembers = new JLabel("Guild Members:");
 	JLabel lblAccountName = new JLabel("Account Name: ");
@@ -290,30 +292,34 @@ public class Main_Window extends JFrame{
 						}
 						else {
 							try {
-								rs = stmt.executeQuery("insert into BelongsTo values('" +selectedGuild+ "', " +accountID+")");
-								//Update the label information
-								rs = stmt.executeQuery("select count(AccountID) as Members"
-										+ "				from BelongsTo"
-										+ "				where GuildName='" + selectedGuild + "'");
-								while(rs.next()) {
-									lblMembersFill.setText(rs.getString("Members"));
+								//Check the roster size before inserting
+								if (Integer.parseInt(lblRosterSizeFill.getText()) > Integer.parseInt(lblMembersFill.getText())) {
+									rs = stmt.executeQuery("insert into BelongsTo values('" +selectedGuild+ "', " +accountID+")");
+									//Update the label information
+									rs = stmt.executeQuery("select count(AccountID) as Members"
+											+ "				from BelongsTo"
+											+ "				where GuildName='" + selectedGuild + "'");
+									while(rs.next()) {
+										lblMembersFill.setText(rs.getString("Members"));
+									}
+									//Update the list all members in guild table
+									rs = stmt.executeQuery("select P1.AccountName from Player1 P1, BelongsTo BT where BT.GuildName='" +selectedGuild+ "' and BT.AccountID=P1.AccountID");
+									table.setModel(buildTableModel(rs));
+									//Update the players in all guilds table
+									rs = stmt.executeQuery("select p.AccountName,p.AccountID from Player1 p "
+											+ "where NOT EXISTS ((select g.GuildName from Guild_Owns g) "
+											+ "					  minus "
+											+ "					 (select b.GuildName from BelongsTo b where b.AccountID=p.AccountID))");
+									table3.setModel(buildTableModel(rs));
+									//Update list of guilds the player is in
+									guildBox.removeAllItems();
+									rs = stmt.executeQuery("select distinct * from BelongsTo where AccountID=" +accountID);
+									while(rs.next()) {
+										guildBox.addItem(rs.getString("GuildName"));
+									}
+									JOptionPane.showMessageDialog(null, "Join Guild Successful!");
 								}
-								//Update the list all members in guild table
-								rs = stmt.executeQuery("select P1.AccountName from Player1 P1, BelongsTo BT where BT.GuildName='" +selectedGuild+ "' and BT.AccountID=P1.AccountID");
-								table.setModel(buildTableModel(rs));
-								//Update the players in all guilds table
-								rs = stmt.executeQuery("select p.AccountName,p.AccountID from Player1 p "
-										+ "where NOT EXISTS ((select g.GuildName from Guild_Owns g) "
-										+ "					  minus "
-										+ "					 (select b.GuildName from BelongsTo b where b.AccountID=p.AccountID))");
-								table3.setModel(buildTableModel(rs));
-								//Update list of guilds the player is in
-								guildBox.removeAllItems();
-								rs = stmt.executeQuery("select distinct * from BelongsTo where AccountID=" +accountID);
-								while(rs.next()) {
-									guildBox.addItem(rs.getString("GuildName"));
-								}
-								JOptionPane.showMessageDialog(null, "Join Guild Successful!");
+								else JOptionPane.showMessageDialog(null, "Guild is full.");
 							} catch (SQLException e) {
 								e.printStackTrace();
 							}
@@ -420,32 +426,36 @@ public class Main_Window extends JFrame{
 						JOptionPane.showMessageDialog(null, "You are already a member of the guild: " + selectedGuild);
 					}
 					else {
-						rs = stmt.executeQuery("select * from Player1 where AccountName='" +selectedPlayer+ "'");
-						if(rs.next()) selectedPlayerID = rs.getInt("AccountID");
-						rs = stmt.executeQuery("insert into BelongsTo values ('" +selectedGuild+ "',"+selectedPlayerID+ ")");
-						//Update the label information
-						rs = stmt.executeQuery("select count(AccountID) as Members"
-								+ "				from BelongsTo"
-								+ "				where GuildName='" + selectedGuild + "'");
-						while(rs.next()) {
-							lblMembersFill.setText(rs.getString("Members"));
+						//Check the roster size before inserting
+						if (Integer.parseInt(lblRosterSizeFill.getText()) > Integer.parseInt(lblMembersFill.getText())) {
+							rs = stmt.executeQuery("select * from Player1 where AccountName='" +selectedPlayer+ "'");
+							if(rs.next()) selectedPlayerID = rs.getInt("AccountID");
+							rs = stmt.executeQuery("insert into BelongsTo values ('" +selectedGuild+ "',"+selectedPlayerID+ ")");
+							//Update the label information
+							rs = stmt.executeQuery("select count(AccountID) as Members"
+									+ "				from BelongsTo"
+									+ "				where GuildName='" + selectedGuild + "'");
+							while(rs.next()) {
+								lblMembersFill.setText(rs.getString("Members"));
+							}
+							//Update the list all members in guild table
+							rs = stmt.executeQuery("select P1.AccountName from Player1 P1, BelongsTo BT where BT.GuildName='" +selectedGuild+ "' and BT.AccountID=P1.AccountID");
+							table.setModel(buildTableModel(rs));
+							//Update the players in all guilds table
+							rs = stmt.executeQuery("select p.AccountName,p.AccountID from Player1 p "
+									+ "where NOT EXISTS ((select g.GuildName from Guild_Owns g) "
+									+ "					  minus "
+									+ "					 (select b.GuildName from BelongsTo b where b.AccountID=p.AccountID))");
+							table3.setModel(buildTableModel(rs));
+							//Update list of guilds the player is in
+							guildBox.removeAllItems();
+							rs = stmt.executeQuery("select distinct * from BelongsTo where AccountID=" +accountID);
+							while(rs.next()) {
+								guildBox.addItem(rs.getString("GuildName"));
+							}
+							JOptionPane.showMessageDialog(null, "Successfully added!");
 						}
-						//Update the list all members in guild table
-						rs = stmt.executeQuery("select P1.AccountName from Player1 P1, BelongsTo BT where BT.GuildName='" +selectedGuild+ "' and BT.AccountID=P1.AccountID");
-						table.setModel(buildTableModel(rs));
-						//Update the players in all guilds table
-						rs = stmt.executeQuery("select p.AccountName,p.AccountID from Player1 p "
-								+ "where NOT EXISTS ((select g.GuildName from Guild_Owns g) "
-								+ "					  minus "
-								+ "					 (select b.GuildName from BelongsTo b where b.AccountID=p.AccountID))");
-						table3.setModel(buildTableModel(rs));
-						//Update list of guilds the player is in
-						guildBox.removeAllItems();
-						rs = stmt.executeQuery("select distinct * from BelongsTo where AccountID=" +accountID);
-						while(rs.next()) {
-							guildBox.addItem(rs.getString("GuildName"));
-						}
-						JOptionPane.showMessageDialog(null, "Successfully added!");
+						else JOptionPane.showMessageDialog(null, "Guild is full.");
 					}
 				} catch (SQLException e) {
 					e.printStackTrace();
@@ -680,8 +690,11 @@ public class Main_Window extends JFrame{
 		ResultSet rs = null;
 		try {			
 			rs = stmt.executeQuery(sQuery);	
-		} catch (SQLException e1) {
-			e1.printStackTrace();
+		} catch (Exception exc) {
+			if (exc instanceof SQLException) 
+				exc.printStackTrace();
+			if (exc instanceof SQLIntegrityConstraintViolationException)
+				JOptionPane.showMessageDialog(null, "Roster size constraint violated.");
 		}
 		
 		return rs;

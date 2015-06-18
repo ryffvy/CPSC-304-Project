@@ -11,6 +11,7 @@ import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JRadioButton;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JButton;
 
@@ -22,14 +23,12 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-
 import java.util.Enumeration;
 import java.util.Vector;
 
@@ -52,7 +51,7 @@ public class Main_Window extends JFrame{
 	final JLabel lblGuildLeaderFill = new JLabel();
 	final JLabel lblMembersFill = new JLabel();
 	final JLabel lblGuildServerFill = new JLabel();
-	final JLabel lblRosterSizeFill = new JLabel();
+	final JTextField lblRosterSizeFill = new JTextField();
 	JLabel lblGuildMembers = new JLabel("Guild Members:");
 	JLabel lblAccountName = new JLabel("Account Name: ");
 	JLabel lblServer = new JLabel("Server: ");
@@ -95,6 +94,7 @@ public class Main_Window extends JFrame{
 	JPanel panPlayerInfo = new JPanel();
 	JPanel panel_8 = new JPanel();
 	JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+	JButton btnServices = new JButton("Services");
 	
 	public Main_Window(final String accountID, final String userType){
 		sAccountID = accountID;
@@ -982,7 +982,7 @@ public class Main_Window extends JFrame{
 		JLabel lblRosterSize = new JLabel("Roster Size:");
 		lblRosterSize.setBounds(17, 130, 90, 22);
 		tabGuild1.add(lblRosterSize);
-		lblRosterSizeFill.setBounds(105, 130, 162, 22);
+		lblRosterSizeFill.setBounds(105, 130, 31, 22);
 		tabGuild1.add(lblRosterSizeFill);
 		
 		JLabel lblGuild_1 = new JLabel("Guild: ");
@@ -1043,6 +1043,31 @@ public class Main_Window extends JFrame{
 		
 		btnAdd.setBounds(72, 75, 165, 23);
 		panel_8.add(btnAdd);
+		
+		//Change roster size
+		JButton btnNewButton = new JButton("Change Size");
+		btnNewButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if (((String)listGuildBox.getSelectedItem()).equals("(no guild selected)")) 
+					JOptionPane.showMessageDialog(null, "No guild is selected.");
+				else {
+					try {
+						int newRosterSize = Integer.parseInt(lblRosterSizeFill.getText());
+						if(newRosterSize > 400) JOptionPane.showMessageDialog(null, "Roster size constraint violated.");
+						else if (newRosterSize >= Integer.parseInt(lblMembersFill.getText())) {
+							ResultSet rs = exQuery("Update Guild_Owns set RosterSize=" +newRosterSize+ " "
+									+ "				where GuildName='" +(String)listGuildBox.getSelectedItem()+ "'");
+							JOptionPane.showMessageDialog(null, "Roster size updated.");
+						}
+						else JOptionPane.showMessageDialog(null, "Number less than existing amount of members.");
+					} catch (NumberFormatException exc) { 
+						JOptionPane.showMessageDialog(null, "Size must be a number.");
+					}
+				}
+			}
+		});
+		btnNewButton.setBounds(140, 130, 117, 23);
+		tabGuild1.add(btnNewButton);
 		
 		//Create an Admin tab
 		tabAdmin.setVisible(false);
@@ -1142,5 +1167,15 @@ public class Main_Window extends JFrame{
 		cmbPurchaser.addItem("Best");
 		cmbPurchaser.addItem("Worst");
 		panel_6.add(cmbPurchaser);
+		
+		btnServices.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				Services_Window frame = new Services_Window();
+				frame.setVisible(true);
+			}
+		});
+		btnServices.setBounds(218, 262, 117, 29);
+		tabAdmin.add(btnServices);
 	}
 }

@@ -214,6 +214,7 @@ public class BuySell_Window extends JFrame {
 		});
 	}
 
+	// updates the window
 	public void update()
 	{
 		String sQuery = "";

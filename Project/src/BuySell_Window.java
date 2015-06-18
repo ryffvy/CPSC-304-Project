@@ -222,7 +222,7 @@ public class BuySell_Window extends JFrame {
 			lblTitle.setText("Buy Items:");
 			btnAction.setText("Buy");
 			panServices.setVisible(false);
-			sQuery = "select * from placesell";
+			sQuery = "select charname as \"CharacterName\", orderid as \"Order ID\", itemid as \"Item ID\", sellprice as \"Price\", quantity as \"Quantity\", fulfill as \"Fulfilled\" from placesell";
 		}
 		else
 		{
@@ -231,7 +231,7 @@ public class BuySell_Window extends JFrame {
 				lblTitle.setText("Sell Items:");
 				btnAction.setText("Sell");
 				panServices.setVisible(false);
-				sQuery = "select i.itemid from ininventory n, item i where i.itemid = n.itemid and n.charname = '" + Main_Window.sSelectedChar + "'";
+				sQuery = "select i.itemid as \"Item ID\" from ininventory n, item i where i.itemid = n.itemid and n.charname = '" + Main_Window.sSelectedChar + "'";
 			}
 			else
 			{
@@ -241,7 +241,7 @@ public class BuySell_Window extends JFrame {
 				txfCost.setVisible(false);
 				lblQuantity.setVisible(false);
 				txfQuantity.setVisible(false);
-				sQuery = "select s.serviceid, s.name from purchases p, service s where accountid = " + Main_Window.sAccountID + " and  p.serviceid = s.serviceid";
+				sQuery = "select s.serviceid as \"Service ID\", s.name as \"Name\" from purchases p, service s where accountid = " + Main_Window.sAccountID + " and  p.serviceid = s.serviceid";
 				rs = executeQuery(sQuery);
 				try {
 					tblPurchasedServices.setModel(Main_Window.buildTableModel(rs));
@@ -249,7 +249,7 @@ public class BuySell_Window extends JFrame {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-				sQuery = "select * from service";
+				sQuery = "select serviceid as \"Service ID\", name, price from service";
 			}
 		}
 		

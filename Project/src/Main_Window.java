@@ -69,7 +69,6 @@ public class Main_Window extends JFrame{
 	final JComboBox guildBox = new JComboBox();
 	final JComboBox listGuildBox = new JComboBox();
 	final JComboBox addPlayerBox = new JComboBox();
-	final JComboBox toGuildBox = new JComboBox();
 	final JComboBox cmbServer = new JComboBox();
 	final JComboBox cmbLevel = new JComboBox();
 	final JComboBox cmbPurchaser = new JComboBox();
@@ -401,33 +400,25 @@ public class Main_Window extends JFrame{
 		}
 		
 		
-		//Populate the list with guild names
-		try {
-			ResultSet rs = stmt.executeQuery("select distinct GuildName from BelongsTo");
-			while (rs.next()) {
-				toGuildBox.addItem(rs.getString("GuildName"));
-			}
-		} catch(SQLException e) {
-			e.printStackTrace();
-		}
-		
 		
 		//Handle when 'Add' button is pressed
 		btnAdd.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				String selectedPlayer = (String) addPlayerBox.getSelectedItem();
-				String selectedGuild = (String) toGuildBox.getSelectedItem();
+				String selectedGuild = (String) listGuildBox.getSelectedItem();
 				if (selectedPlayer.equals("(no player selected)")) JOptionPane.showMessageDialog(null, "No player is selected.");
 				if (selectedGuild.equals("(no guild selected)")) JOptionPane.showMessageDialog(null, "No guild is selected.");
 				int selectedPlayerID = 0;
 				try {
 					//Check if already in the guild
-					ResultSet rs = stmt.executeQuery("select AccountID from BelongsTo where Guildname='" + selectedGuild + "' and AccountID="+accountID);
+					ResultSet rs = stmt.executeQuery("select P1.AccountID from BelongsTo BT, Player1 P1 "
+							+ "where Guildname='" + selectedGuild + "' and P1.AccountName='" +selectedPlayer+ "' and P1.AccountID=BT.AccountID");
 					if (rs.next()) {
 						JOptionPane.showMessageDialog(null, "You are already a member of the guild: " + selectedGuild);
 					}
 					else {
 						//Check the roster size before inserting
+						try {							
 						if (Integer.parseInt(lblRosterSizeFill.getText()) > Integer.parseInt(lblMembersFill.getText())) {
 							rs = stmt.executeQuery("select * from Player1 where AccountName='" +selectedPlayer+ "'");
 							if(rs.next()) selectedPlayerID = rs.getInt("AccountID");
@@ -450,13 +441,18 @@ public class Main_Window extends JFrame{
 							table3.setModel(buildTableModel(rs));
 							//Update list of guilds the player is in
 							guildBox.removeAllItems();
-							rs = stmt.executeQuery("select distinct * from BelongsTo where AccountID=" +accountID);
+							rs = stmt.executeQuery("select distinct * from BelongsTo BT, Player1 P1 "
+									+ " where P1.AccountName='" +selectedPlayer+ "' and P1.AccountID=BT.AccountID");
 							while(rs.next()) {
 								guildBox.addItem(rs.getString("GuildName"));
 							}
 							JOptionPane.showMessageDialog(null, "Successfully added!");
 						}
 						else JOptionPane.showMessageDialog(null, "Guild is full.");
+						} catch (NumberFormatException e4)
+						{
+							
+						}
 					}
 				} catch (SQLException e) {
 					e.printStackTrace();
@@ -1027,7 +1023,7 @@ public class Main_Window extends JFrame{
 		lblGuild_1.setBounds(17, 6, 41, 23);
 		tabGuild1.add(lblGuild_1);
 		
-		panel_8.setBounds(17, 196, 653, 104);
+		panel_8.setBounds(6, 196, 664, 104);
 		tabGuild1.add(panel_8);
 		panel_8.setLayout(null);
 		
@@ -1060,26 +1056,16 @@ public class Main_Window extends JFrame{
 		tabGuild1.add(btnLeave);
 		
 		JLabel label_2 = new JLabel("Add Player:");
-		label_2.setBounds(0, 20, 65, 16);
+		label_2.setBounds(6, 41, 77, 16);
 		panel_8.add(label_2);
 		
 		addPlayerBox.insertItemAt("(no player selected)", 0);
 		addPlayerBox.setSelectedIndex(0);
 		addPlayerBox.setMaximumRowCount(10);
-		addPlayerBox.setBounds(72, 11, 165, 25);
+		addPlayerBox.setBounds(83, 38, 165, 25);
 		panel_8.add(addPlayerBox);
 		
-		JLabel lblToGuild = new JLabel("To Guild: ");
-		lblToGuild.setBounds(0, 49, 65, 16);
-		panel_8.add(lblToGuild);
-		
-		toGuildBox.insertItemAt("(no guild selected)", 0);
-		toGuildBox.setSelectedIndex(0);
-		toGuildBox.setMaximumRowCount(5);
-		toGuildBox.setBounds(72, 45, 165, 25);
-		panel_8.add(toGuildBox);
-		
-		btnAdd.setBounds(72, 75, 165, 23);
+		btnAdd.setBounds(83, 75, 165, 23);
 		panel_8.add(btnAdd);
 		
 		btnNewButton.setBounds(150, 131, 117, 22);

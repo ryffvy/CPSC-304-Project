@@ -97,6 +97,7 @@ public class Main_Window extends JFrame{
 	JPanel panel_8 = new JPanel();
 	JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 	JButton btnServices = new JButton("Services");
+	JButton btnNewButton = new JButton("Change Size");
 	
 	public Main_Window(final String accountID, final String userType){
 		sAccountID = accountID;
@@ -665,6 +666,29 @@ public class Main_Window extends JFrame{
 		});
 		
 		
+		
+		//Change roster size
+		btnNewButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if (((String)listGuildBox.getSelectedItem()).equals("(no guild selected)")) 
+					JOptionPane.showMessageDialog(null, "No guild is selected.");
+				else {
+					try {
+						int newRosterSize = Integer.parseInt(lblRosterSizeFill.getText());
+						if(newRosterSize > 400) JOptionPane.showMessageDialog(null, "Roster size constraint violated.");
+						else if (newRosterSize >= Integer.parseInt(lblMembersFill.getText())) {
+							ResultSet rs = exQuery("Update Guild_Owns set RosterSize=" +newRosterSize+ " "
+									+ "				where GuildName='" +(String)listGuildBox.getSelectedItem()+ "'");
+							JOptionPane.showMessageDialog(null, "Roster size updated.");
+						}
+						else JOptionPane.showMessageDialog(null, "Number less than existing amount of members.");
+					} catch (NumberFormatException exc) { 
+						JOptionPane.showMessageDialog(null, "Size must be a number.");
+					}
+				}
+			}
+		});
+		
 	    //Display Player Info
 		try {
 			ResultSet rs = stmt.executeQuery("select * from Player1 p1, Player2 p2 "
@@ -767,6 +791,7 @@ public class Main_Window extends JFrame{
 		{
 			tabbedPane.remove(3);
 			panel_8.setVisible(false);
+			btnNewButton.setEnabled(false);
 		}
 	}
 	
@@ -995,7 +1020,7 @@ public class Main_Window extends JFrame{
 		JLabel lblRosterSize = new JLabel("Roster Size:");
 		lblRosterSize.setBounds(17, 130, 90, 22);
 		tabGuild1.add(lblRosterSize);
-		lblRosterSizeFill.setBounds(105, 130, 31, 22);
+		lblRosterSizeFill.setBounds(105, 130, 41, 22);
 		tabGuild1.add(lblRosterSizeFill);
 		
 		JLabel lblGuild_1 = new JLabel("Guild: ");
@@ -1057,29 +1082,7 @@ public class Main_Window extends JFrame{
 		btnAdd.setBounds(72, 75, 165, 23);
 		panel_8.add(btnAdd);
 		
-		//Change roster size
-		JButton btnNewButton = new JButton("Change Size");
-		btnNewButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				if (((String)listGuildBox.getSelectedItem()).equals("(no guild selected)")) 
-					JOptionPane.showMessageDialog(null, "No guild is selected.");
-				else {
-					try {
-						int newRosterSize = Integer.parseInt(lblRosterSizeFill.getText());
-						if(newRosterSize > 400) JOptionPane.showMessageDialog(null, "Roster size constraint violated.");
-						else if (newRosterSize >= Integer.parseInt(lblMembersFill.getText())) {
-							ResultSet rs = exQuery("Update Guild_Owns set RosterSize=" +newRosterSize+ " "
-									+ "				where GuildName='" +(String)listGuildBox.getSelectedItem()+ "'");
-							JOptionPane.showMessageDialog(null, "Roster size updated.");
-						}
-						else JOptionPane.showMessageDialog(null, "Number less than existing amount of members.");
-					} catch (NumberFormatException exc) { 
-						JOptionPane.showMessageDialog(null, "Size must be a number.");
-					}
-				}
-			}
-		});
-		btnNewButton.setBounds(140, 130, 117, 23);
+		btnNewButton.setBounds(150, 131, 117, 22);
 		tabGuild1.add(btnNewButton);
 		
 		//Create an Admin tab

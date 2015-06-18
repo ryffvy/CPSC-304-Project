@@ -822,7 +822,7 @@ public class Main_Window extends JFrame{
 		
 		final JComboBox cmbPurchaser = new JComboBox();
 		cmbPurchaser.setEnabled(false);
-		cmbPurchaser.setBounds(123, 148, 79, 27);
+		cmbPurchaser.setBounds(133, 153, 69, 22);
 		cmbPurchaser.addItem("Best");
 		cmbPurchaser.addItem("Worst");
 		panel_6.add(cmbPurchaser);
@@ -967,7 +967,7 @@ public class Main_Window extends JFrame{
 									else
 										sAggregation = "MIN";
 									
-									//executeQuery("drop view Servicemoney");
+									exQuery("drop view Servicemoney");
 									exQuery("create view Servicemoney(AccountID, SumPrice) as select AccountID, sum(s.Price) from Purchases p, Service s where p.ServiceID=s.ServiceID group by p.AccountID");
 									rs = exQuery("select p.AccountName as \"Player Name\" from Player1 p, Servicemoney s where p.AccountID = S. AccountID and s.SumPrice in (select " + sAggregation + "(SumPrice) from Servicemoney)");
 									tblAdmin.setModel(buildTableModel(rs));
@@ -982,7 +982,7 @@ public class Main_Window extends JFrame{
 								if (sName == "PM")
 								{
 									try {
-										//executeQuery("drop view SumCharMoney");
+										exQuery("drop view SumCharMoney");
 										exQuery("create view SumCharMoney(AccountID, SumMoney) as select c.AccountID,sum(i.Gold) from  CharacterOwned c, InventoryHad i where c.CharName=i.CharName group by c.AccountID");						
 										rs = exQuery("select p.AccountName as \"Player Name\" from Player1 p, SumCharMoney s where p.AccountID = s.AccountID and s.SumMoney in (select MAX(SumMoney) from SumCharMoney)");
 
